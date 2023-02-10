@@ -1,5 +1,9 @@
 import scrapy
-from ..items import QuoteLoader, QuoteItem
+from ..items import QuoteLoader
+import logging
+from scrapy.utils.log import configure_logging 
+from scrapy.utils.project import get_project_settings
+from quotes.utils import LoggerFilter
 
 # scrapy startproject abbreviation_scraper
 # scrapy crawl quotes -o quotes.jsonl:jsonlines
@@ -9,53 +13,61 @@ from ..items import QuoteLoader, QuoteItem
 # https://github.com/harrywang/scrapy-tutorial/blob/master/tutorial/spiders/quotes_spider_v2.py
 # https://datawookie.dev/blog/2021/06/scrapy-rotating-tor-proxy/
 
-
-""" TODO
-1.    Check if page has been scraped inside parse. If it has, skip. Perhaps logging retains this info?
-     (it might be slow re-reading constantly the logging file)
-        CREATE TABLE IF NOT EXISTS pages (
-        id          INTEGER PRIMARY KEY,
-        url         TEXT    UNIQUE NOT NULL,
-        date        TEXT    NOT NULL
-    );
-2. Clean up hardcoded constants
-3. Check how logging works here
+"""
+TODO
+Middlewares
+pipelines -> database insert and has functions
+check how not to be banned
 """
 
+SETTINGS = get_project_settings()
 
 class QuotesSpider(scrapy.Spider):
 
-    name            = "quotes"                  # Unique spider ID
-    allowed_domains = ['quotes.toscrape.com']   # Do not stray from this
-    start_urls      = [                         # Initial URL to start crawling from
-        'https://quotes.toscrape.com/page/1/'
-        ]
+    allowed_domains = SETTINGS["ALLOWED_DOMAINS"] 
+    name       = SETTINGS["BOT_NAME"]     
+    start_urls = SETTINGS["START_URLS"]
+
+    def __init__(self):
+        
+        configure_logging(
+            settings = {
+                "LOG_FILE"   : SETTINGS.get("LOG_FILE"),
+                "LOG_FORMAT" : SETTINGS.get("LOG_FORMAT"),
+                "LOG_LEVEL"  : SETTINGS.get("LOG_LEVEL")
+            }
+        )
+
+        logging.getLogger('scrapy.core.scraper').addFilter(LoggerFilter())
+
+        return 
+
 
     def parse(self, response):
         """ Handler for the response downloaded for each of the requests made
             Inputs: response -> Instance of TextResponse that holds the page content
         """
 
-        
-
-        if self.isOK(response):
-
-            for quoteDiv in response.xpath('//div[@class="quote"]'):
+        for quoteDiv in response.xpath('//div[@class="quote"]'):
                 
-                # Parse item details (can be put directly in the follow_all)
-                quoteItem = self.parseItem(quoteDiv)
+            # Parse item and proceed to the author page
+            quoteItem = self.parseItem(quoteDiv)
 
-                # Next, go to and parse the author page
-                yield from response.follow_all(
-                    urls     = quoteDiv.xpath('.//span[contains(text(), "by")]/a/@href').extract(),
-                    callback = self.parseAuthor, 
-                    meta     = {'item' : quoteItem}
-                )
-
+            # Next, go to and parse the author page
+            yield from response.follow_all(
+                urls     = quoteDiv.xpath('.//span[contains(text(), "by")]/a/@href').extract(),
+                callback = self.parseAuthor, 
+                meta     = {'item' : quoteItem}
+            )
+            
         # Yield link to the next page
-        yield from response.follow_all(xpath = '//li[@class="next"]//@href', callback = self.parse)
+        yield from response.follow_all(
+            xpath    = '//li[@class="next"]//@href', 
+            callback = self.parse
+        )
 
         return
+
 
     def parseItem(self, response):
         """ Parser for the item details """
@@ -76,9 +88,3 @@ class QuotesSpider(scrapy.Spider):
         loader.add_xpath(field_name = 'author_bio',       xpath = '//div[@class = "author-description"]/text()')
 
         yield loader.load_item()
-
-
-    @staticmethod
-    def isOK(response):
-        """ Checks if the appropriate response has been received from the server """
-        return response.status == 200
