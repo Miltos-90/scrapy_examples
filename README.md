@@ -1,2 +1,2 @@
 # scraper_template
-A template using scrapy
+A scraper template using scrapy
