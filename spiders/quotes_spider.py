@@ -7,6 +7,22 @@ from ..items import QuoteLoader, QuoteItem
 
 # https://towardsdatascience.com/a-minimalist-end-to-end-scrapy-tutorial-part-i-11e350bcdec0
 # https://github.com/harrywang/scrapy-tutorial/blob/master/tutorial/spiders/quotes_spider_v2.py
+# https://datawookie.dev/blog/2021/06/scrapy-rotating-tor-proxy/
+
+
+""" TODO
+    
+1.    Check if page has been scraped inside parse. If it has, skip. Perhaps logging retains this info?
+     (it might be slow re-reading constantly the logging file)
+        CREATE TABLE IF NOT EXISTS pages (
+        id          INTEGER PRIMARY KEY,
+        url         TEXT    UNIQUE NOT NULL,
+        date        TEXT    NOT NULL
+    );
+2. Clean up hardcoded constants
+3. Check how logging works here
+"""
+
 
 class QuotesSpider(scrapy.Spider):
 
@@ -20,6 +36,8 @@ class QuotesSpider(scrapy.Spider):
         """ Handler for the response downloaded for each of the requests made
             Inputs: response -> Instance of TextResponse that holds the page content
         """
+
+        
 
         if self.isOK(response):
 
