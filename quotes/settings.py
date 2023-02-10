@@ -1,3 +1,5 @@
+import logging
+
 # Scrapy settings for quotes project
 #
 # For simplicity, this file contains only settings considered important or
@@ -7,17 +9,22 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'quotes'
-
-SPIDER_MODULES = ['quotes.spiders']
-NEWSPIDER_MODULE = 'quotes.spiders'
-
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'quotes (+http://www.yourdomain.com)'
 
-# Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+# General spider/bot settings
+BOT_NAME         = 'quotes'
+ALLOWED_DOMAINS  = ['quotes.toscrape.com']                
+START_URLS       = ['https://quotes.toscrape.com/page/1/'] 
+SPIDER_MODULES   = ['quotes.spiders']
+NEWSPIDER_MODULE = 'quotes.spiders'
+ROBOTSTXT_OBEY   = True 
+
+# Configure logging
+LOG_FILE   = 'logger.log'
+LOG_FORMAT = '%(levelname)s: %(message)s'
+LOG_LEVEL  = logging.DEBUG
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
@@ -27,7 +34,8 @@ ITEM_PIPELINES = {
 }
 
 # Database-related settings
-DB_FILE   = "./scrapy_quotes.db"
+DB_FILE     = "./scrapy_quotes.db"
+URL_DB_FILE = "./visited_urls.db" 
 
 DB_PRAGMA = """
     PRAGMA foreign_keys=ON;
@@ -53,6 +61,14 @@ DB_SCHEMA = """
         author_id   INTEGER NOT NULL,
         FOREIGN KEY(author_id)  REFERENCES authors(id)
     ) STRICT; 
+"""
+
+URL_DB_SCHEMA = """
+    CREATE TABLE IF NOT EXISTS pages (
+            id     INTEGER PRIMARY KEY,
+            url    TEXT    NOT NULL,
+            date   TEXT    NOT NULL
+        );
 """
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)

@@ -6,7 +6,7 @@
 from scrapy import Item, Field
 from scrapy.loader import ItemLoader
 
-from scrapy.loader.processors import MapCompose, TakeFirst
+from itemloaders.processors import MapCompose, TakeFirst
 from datetime import datetime
 
 
@@ -29,8 +29,7 @@ def parse_location(text):
 
 
 class QuoteItem(Item):
-    """ Declares the item fields.
-    """
+    """ Declares the item fields. """
 
     quote            = Field()
     author           = Field()
@@ -41,8 +40,8 @@ class QuoteItem(Item):
 
 
 class QuoteLoader(ItemLoader):
-    """ Declares the processors used in the loader for each field
-        of the items.
+    """ Declares the processors used in the loader 
+        for each field of the items.
     """
 
     default_item_class       = QuoteItem
