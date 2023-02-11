@@ -138,8 +138,9 @@ class URLDatabase(Database):
 
         query = "SELECT EXISTS(SELECT * FROM pages WHERE url = ?)"
         task  = (url, )
-
-        return self.cursor.execute(query, task).fetchone()
+        out   = self.cursor.execute(query, task).fetchone()[0]
+        
+        return bool(out)
 
 
     @staticmethod

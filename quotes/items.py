@@ -7,7 +7,7 @@ from scrapy import Item, Field
 from scrapy.loader import ItemLoader
 
 from itemloaders.processors import MapCompose, TakeFirst
-from datetime import datetime
+from datetime import datetime as dt
 
 
 def removeQuotes(text):
@@ -17,7 +17,7 @@ def removeQuotes(text):
 
 def toDatetime(text):
     """ Convert string (format example: May 15, 2003) to datetime"""
-    return datetime.strptime(text, '%B %d, %Y')
+    return dt.strptime(text, '%B %d, %Y')
 
 def toStringDatetime(datetimeObject):
     return datetimeObject.strftime('%Y-%m-%d')

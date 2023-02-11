@@ -9,10 +9,6 @@ import logging
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'quotes (+http://www.yourdomain.com)'
-
 # General spider/bot settings
 BOT_NAME         = 'quotes'
 ALLOWED_DOMAINS  = ['quotes.toscrape.com']                
@@ -22,13 +18,16 @@ NEWSPIDER_MODULE = 'quotes.spiders'
 ROBOTSTXT_OBEY   = True 
 
 # Configure logging
-LOG_FILE   = 'logger.log'
-LOG_FORMAT = '%(levelname)s: %(message)s'
-LOG_LEVEL  = logging.DEBUG
+LOG_FILE         = 'logger.log'
+LOG_FORMAT       = '%(levelname)s: %(message)s'
+LOG_LEVEL        = logging.DEBUG
+
+# Disable cookies (enabled by default)
+COOKIES_ENABLED  = False
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
+ITEM_PIPELINES   = {
     'quotes.pipelines.UrlManagementPipeline': 0,
     'quotes.pipelines.DefaultValuesPipeline': 1,
     'quotes.pipelines.SaveQuotesPipeline'   : 2,
@@ -39,6 +38,16 @@ ITEM_PIPELINES = {
 DOWNLOADER_MIDDLEWARES = {
     'quotes.middlewares.UrlManagementMiddleware': 0,
 }
+
+# Enable or disable extensions and related settings
+# See https://docs.scrapy.org/en/latest/topics/extensions.html
+EXTENSIONS = {
+    'quotes.extensions.ItemCounter': 0,
+}
+
+ITEM_COUNTER_ENABLED = True
+ITEM_COUNTER_STEP    = 20
+
 
 # Database-related settings
 DB_FILE     = "./scrapy_quotes.db"
@@ -80,6 +89,9 @@ URL_DB_SCHEMA = """
         );
 """
 
+# Crawl responsibly by identifying yourself (and your website) on the user-agent
+#USER_AGENT = 'quotes (+http://www.yourdomain.com)'
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
@@ -90,9 +102,6 @@ URL_DB_SCHEMA = """
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
-
-# Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -109,13 +118,6 @@ URL_DB_SCHEMA = """
 #    'quotes.middlewares.QuotesSpiderMiddleware': 543,
 #}
 
-
-
-# Enable or disable extensions
-# See https://docs.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
-#    'scrapy.extensions.telnet.TelnetConsole': None,
-#}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

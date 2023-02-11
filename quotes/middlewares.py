@@ -33,9 +33,6 @@ from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
 from quotes.databases import URLDatabase
 
-# useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
-
 
 class UrlManagementMiddleware(object):
     """ Skips URLs already visited (i.e. already stored in the database)
@@ -59,16 +56,12 @@ class UrlManagementMiddleware(object):
 
         self.db.connect()
         url = request.url
-
-        print(f'operating on {url}', end = '\t')
         
         if self.db.has(url):
-            print('DUPE')
             self.db.close()
             raise IgnoreRequest("Duplicate url ignored: {url}")
 
         else:
-            print(' ')
             self.db.close()
             return None
 
