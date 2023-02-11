@@ -6,23 +6,10 @@ from scrapy.http import TextResponse
 
 SETTINGS = get_project_settings()
 
-# scrapy startproject abbreviation_scraper
-# scrapy crawl quotes -o quotes.jsonl:jsonlines
-# More examples and patterns: https://docs.scrapy.org/en/latest/intro/tutorial.html#intro-tutorial
-
-# https://towardsdatascience.com/a-minimalist-end-to-end-scrapy-tutorial-part-i-11e350bcdec0
-# https://github.com/harrywang/scrapy-tutorial/blob/master/tutorial/spiders/quotes_spider_v2.py
-# https://datawookie.dev/blog/2021/06/scrapy-rotating-tor-proxy/
-
-"""
-TODO
-Middlewares line 63.
-check how not to be banned
-"""
 
 class QuotesSpider(Spider):
 
-    allowed_domains = SETTINGS["ALLOWED_DOMAINS"] 
+    allowed_domains = SETTINGS["ALLOWED_DOMAINS"]
     start_urls      = SETTINGS["START_URLS"]
     name            = SETTINGS["BOT_NAME"]
 
