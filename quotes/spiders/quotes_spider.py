@@ -1,9 +1,10 @@
-import scrapy
 from ..items import QuoteLoader
-import logging
-from scrapy.utils.log import configure_logging 
+
+from scrapy import Spider
 from scrapy.utils.project import get_project_settings
-from quotes.utils import LoggerFilter
+from scrapy.http import TextResponse
+
+SETTINGS = get_project_settings()
 
 # scrapy startproject abbreviation_scraper
 # scrapy crawl quotes -o quotes.jsonl:jsonlines
@@ -15,45 +16,26 @@ from quotes.utils import LoggerFilter
 
 """
 TODO
-Middlewares
-pipelines -> database insert and has functions
+Middlewares line 63.
 check how not to be banned
 """
 
-SETTINGS = get_project_settings()
-
-class QuotesSpider(scrapy.Spider):
+class QuotesSpider(Spider):
 
     allowed_domains = SETTINGS["ALLOWED_DOMAINS"] 
-    name       = SETTINGS["BOT_NAME"]     
-    start_urls = SETTINGS["START_URLS"]
-
-    def __init__(self):
-        
-        configure_logging(
-            settings = {
-                "LOG_FILE"   : SETTINGS.get("LOG_FILE"),
-                "LOG_FORMAT" : SETTINGS.get("LOG_FORMAT"),
-                "LOG_LEVEL"  : SETTINGS.get("LOG_LEVEL")
-            }
-        )
-
-        logging.getLogger('scrapy.core.scraper').addFilter(LoggerFilter())
-
-        return 
+    start_urls      = SETTINGS["START_URLS"]
+    name            = SETTINGS["BOT_NAME"]
 
 
-    def parse(self, response):
+    def parse(self, response: TextResponse):
         """ Handler for the response downloaded for each of the requests made
             Inputs: response -> Instance of TextResponse that holds the page content
         """
 
         for quoteDiv in response.xpath('//div[@class="quote"]'):
                 
-            # Parse item and proceed to the author page
-            quoteItem = self.parseItem(quoteDiv)
+            quoteItem = self.parseItem(quoteDiv, response.url)
 
-            # Next, go to and parse the author page
             yield from response.follow_all(
                 urls     = quoteDiv.xpath('.//span[contains(text(), "by")]/a/@href').extract(),
                 callback = self.parseAuthor, 
@@ -69,17 +51,18 @@ class QuotesSpider(scrapy.Spider):
         return
 
 
-    def parseItem(self, response):
+    def parseItem(self, response: TextResponse, url: str):
         """ Parser for the item details """
 
         loader = QuoteLoader(selector = response)
         loader.add_xpath(field_name = 'quote',  xpath = './/span[@class = "text"]/text()')
         loader.add_xpath(field_name = 'author', xpath = './/small[@class = "author"]/text()')
         loader.add_xpath(field_name = 'tag',    xpath = './/meta[@class = "keywords"]/@content')
+        loader.add_value(field_name = 'url',    value = url)
         return loader.load_item()
 
 
-    def parseAuthor(self, response):
+    def parseAuthor(self, response: TextResponse):
         """ Parser for the author details """
 
         loader = QuoteLoader(item = response.meta['item'], selector = response)
