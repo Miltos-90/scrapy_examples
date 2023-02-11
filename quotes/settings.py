@@ -42,11 +42,11 @@ DOWNLOADER_MIDDLEWARES = {
 # Enable or disable extensions and related settings
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 EXTENSIONS = {
-    'quotes.extensions.ItemCounter': 0,
+    'quotes.extensions.ProgressMonitor': 0,
 }
 
-ITEM_COUNTER_ENABLED = True
-ITEM_COUNTER_STEP    = 20
+PROGRESS_MONITOR_ENABLED = True
+PROGRESS_MONITOR_STEP    = 10
 
 
 # Database-related settings

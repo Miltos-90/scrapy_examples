@@ -133,6 +133,7 @@ class URLDatabase(Database):
 
         return
 
+
     def has(self, url:str):
         """ Checks if a url exists in the database """
 
@@ -141,6 +142,15 @@ class URLDatabase(Database):
         out   = self.cursor.execute(query, task).fetchone()[0]
         
         return bool(out)
+
+
+    def last(self):
+        """ Returns the last url that was scraped """
+
+        query = "SELECT url FROM pages WHERE ID = (SELECT MAX(ID) FROM pages)"
+        out   = self.cursor.execute(query)
+        out   = out.fetchone()[0]
+        return out
 
 
     @staticmethod
