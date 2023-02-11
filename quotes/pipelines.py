@@ -4,14 +4,28 @@
 # by commenting out the setting in the settings.py file
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
-from quotes.utils import createConnection
+from quotes.databases import QuoteDatabase, URLDatabase
+from scrapy import Spider
 
-class DefaultValuesPipeline(object):
+
+class UrlManagementPipeline(object):
+    """ Insers visited URLs to the database """
 
     def __init__(self):
-        return
+        self.db = URLDatabase()
 
     def process_item(self, item, spider):
+
+        self.db.connect()
+        self.db.insert(item['url'])
+        self.db.close()
+        return item
+
+
+class DefaultValuesPipeline(object):
+    """ Sets default values to all fields """
+
+    def process_item(self, item, spider: Spider):
         """ Save quotes in the database
             This method is called for every item pipeline component
         """
@@ -28,31 +42,22 @@ class DefaultValuesPipeline(object):
 
 
 class SaveQuotesPipeline(object):
+    """ Inserts quotes to the database """
 
-    def process_item(self, item, spider):
+    def __init__(self):
+        self.db = QuoteDatabase()
+
+        return
+
+    def process_item(self, item, spider: Spider):
         """ Save quotes in the database
             This method is called for every item pipeline component
         """
         
-        connection = createConnection()
-        cursor     = connection.cursor()
-
-        # Save author
-        query = "INSERT OR IGNORE INTO authors (name, birthdate, birthplace, bio) VALUES (?, ?, ?, ?)"
-        task  = (item['author'], item['author_birthdate'], item['author_birth_loc'], item['author_bio'])
-        cursor.execute(query, task)
-        
-        # Save quote
-        authID = cursor.execute(
-            "SELECT id FROM authors WHERE name = ?", (item['author'], )
-            ).fetchone()[0]
-        query  = "INSERT OR IGNORE INTO quotes (quote, tags, author_id) VALUES (?, ?, ?)"
-        task   = (item['quote'], item['tag'], authID)
-        cursor.execute(query, task)
-
-        # Close connection
-        connection.commit()
-        cursor.close()
-        connection.close()
+        self.db.connect()
+        self.db.insertAuthor(item)
+        self.db.insertQuote(item)
+        self.db.close()
 
         return item
+

@@ -29,8 +29,15 @@ LOG_LEVEL  = logging.DEBUG
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
+    'quotes.pipelines.UrlManagementPipeline': 0,
     'quotes.pipelines.DefaultValuesPipeline': 1,
-    'quotes.pipelines.SaveQuotesPipeline': 2,
+    'quotes.pipelines.SaveQuotesPipeline'   : 2,
+}
+
+# Enable or disable downloader middlewares
+# See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
+DOWNLOADER_MIDDLEWARES = {
+    'quotes.middlewares.UrlManagementMiddleware': 0,
 }
 
 # Database-related settings
@@ -42,6 +49,8 @@ DB_PRAGMA = """
     PRAGMA journal_mode=WAL;
     PRAGMA synchronous=FULL;
     """
+
+URL_DB_PRAGMA = DB_PRAGMA
 
 DB_SCHEMA = """
     -- Author data
@@ -65,9 +74,9 @@ DB_SCHEMA = """
 
 URL_DB_SCHEMA = """
     CREATE TABLE IF NOT EXISTS pages (
-            id     INTEGER PRIMARY KEY,
-            url    TEXT    NOT NULL,
-            date   TEXT    NOT NULL
+            id     INTEGER  PRIMARY KEY,
+            url    TEXT     NOT NULL UNIQUE,
+            date   TEXT     NOT NULL
         );
 """
 
@@ -100,11 +109,7 @@ URL_DB_SCHEMA = """
 #    'quotes.middlewares.QuotesSpiderMiddleware': 543,
 #}
 
-# Enable or disable downloader middlewares
-# See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'quotes.middlewares.QuotesDownloaderMiddleware': 543,
-#}
+
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

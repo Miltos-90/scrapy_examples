@@ -30,9 +30,48 @@ Use a Downloader middleware if you need to do one of the following:
 """ 
 
 from scrapy import signals
+from scrapy.exceptions import IgnoreRequest
+from quotes.databases import URLDatabase
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+
+class UrlManagementMiddleware(object):
+    """ Skips URLs already visited (i.e. already stored in the database)
+    """
+
+    def __init__(self): 
+        self.db = URLDatabase()
+
+        return
+
+    def process_request(self, request, spider):
+        # Called for each request that goes through the downloader
+        # middleware.
+
+        # Must either:
+        # - return None: continue processing this request
+        # - or return a Response object
+        # - or return a Request object
+        # - or raise IgnoreRequest: process_exception() methods of
+        #   installed downloader middleware will be called
+
+        self.db.connect()
+        url = request.url
+
+        print(f'operating on {url}', end = '\t')
+        
+        if self.db.has(url):
+            print('DUPE')
+            self.db.close()
+            raise IgnoreRequest("Duplicate url ignored: {url}")
+
+        else:
+            print(' ')
+            self.db.close()
+            return None
+
 
 
 class QuotesSpiderMiddleware:
@@ -104,6 +143,7 @@ class QuotesDownloaderMiddleware:
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
+        
         return None
 
     def process_response(self, request, response, spider):

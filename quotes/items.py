@@ -31,6 +31,7 @@ def parse_location(text):
 class QuoteItem(Item):
     """ Declares the item fields. """
 
+    url              = Field()
     quote            = Field()
     author           = Field()
     tag              = Field()
