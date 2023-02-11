@@ -10,7 +10,7 @@
 
 """
 TODO
-clean up extension and compute speed (items scraped per second)
+clean up / comment extension
 check how not to be banned
 """
 
