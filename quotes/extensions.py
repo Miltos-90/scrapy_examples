@@ -3,82 +3,104 @@ from scrapy.exceptions import NotConfigured
 from datetime import datetime as dt
 from quotes.databases import URLDatabase
 
+from scrapy import Spider
+
+spider = Spider
+
 
 class ProgressMonitor:
 
-    def __init__(self, progressStep):
 
-        self.progressStep  = progressStep  # Print every <progressStep> processed items
-        self.itemsScraped  = 0             # Counter for the number of items processed
-        self.lastPrintTime = None          # Time that the last progress message was printed
-        self.startTime     = None          # Time the crawler started 
-        self.db            = URLDatabase() 
+    def __init__(self, numSteps):
+
+        self.numSteps  = numSteps  # Print every <numSteps> processed items
+        self.itemCount = 0             # Counter for the number of items processed
+        self.startTime = None          # Time the crawler started 
+        self.tFormat  = '%d-%m-%Y %H:%M:%S'
+        self.db        = URLDatabase() # Database with URLs
+
 
     @classmethod
     def from_crawler(cls, crawler):
+        """ Instantiate the extension and connect signals """
 
-        # first check if the extension should be enabled 
+        # Check if the extension should be enabled 
         if not crawler.settings.getbool('PROGRESS_MONITOR_ENABLED'):
             raise NotConfigured
 
         # instantiate the extension object
         step = crawler.settings.getint('PROGRESS_MONITOR_STEP', 1000)
-        ext  = cls(progressStep = step)
+        ext  = cls(numSteps = step)
 
-        # connect the extension object to signals
+        # Map extension object to signals
         crawler.signals.connect(ext.spiderOpened, signal = signals.spider_opened)
         crawler.signals.connect(ext.spiderClosed, signal = signals.spider_closed)
-        crawler.signals.connect(ext.printProgress, signal = signals.item_scraped)
+        crawler.signals.connect(ext.itemScraped,  signal = signals.item_scraped)
 
-        # return the extension object
         return ext
 
-    def spiderOpened(self, spider):
 
-        self._updateTimer()
-        self.startTime = self.lastPrintTime
-        print("Crawler started at {}".format(self.lastPrintTime.strftime('%d-%m-%Y %H:%M:%S')))
+    def spiderOpened(self, spider):
+        """ Execute on spider_opened signal """
+
+        self.startTime = dt.now()
+        print("{} | Crawler started.".format(self._now()))
         return 
+
 
     def spiderClosed(self, spider):
+        """ Execute on spider_closed signals """
 
-        self._updateTimer()
-        print("Crawler stopped at {}".format(self.lastPrintTime.strftime('%d-%m-%Y %H:%M:%S')))
+        print("\n{} | Crawler stopped.".format(self._now()))
         return 
 
-    def printProgress(self, item, spider):
 
-        self._updateCounter()
+    def itemScraped(self, item, spider):
+        """ Execute on item_scraped signals """
 
-        if self._makeReport():
+        self.itemCount += 1
+
+        if self._makeReport(): 
+
+            rate = self._scrapeRate()
+            url  = self._lastUrl()
+            time = self._now()
+            msg  = "{} | Items scraped: {} ({:.2f} items/sec) | Last visited: {}"\
+                    .format(time, self.itemCount, rate, url)
             
-            # Report progress
-            msg = "Items scraped: {}. Last URL processed: {}. Crawler rate (items/sec): {}. Reported on: {})"\
-            .format(
-                self.itemsScraped, 
-                self._lastUrl(),
-                self._scrapeRate(),
-                dt.now().strftime('%d-%m-%Y %H:%M:%S')
-                )
-            print(msg)
-
-        self._updateTimer()
+            print(msg, end = '\r')
 
         return
 
-    def _makeReport(self):  return self.itemsScraped % self.progressStep == 0
-    def _updateTimer(self): self.lastPrintTime = dt.now()
-    def _updateCounter(self): self.itemsScraped += 1
+
+    def _now(self) -> str: 
+        """ Get current time formatted """
+        
+        return dt.now().strftime(self.tFormat)
+    
+
+    def _makeReport(self) -> bool:
+        """ Checks if a progress message should be printed.
+            (1 = yes / 0 = no) 
+        """
+        
+        return self.itemCount % self.numSteps == 0
+    
 
     def _lastUrl(self):
+        """ Get last visited URL """
+
         self.db.connect()
         lastPage = self.db.last()
         self.db.close()
 
         return lastPage
 
+
     def _scrapeRate(self):
+        """ Compute scraping speed [items/sec] """
+
         elapsedTime = (dt.now() - self.startTime).total_seconds()
-        return self.itemsScraped / elapsedTime
+        return self.itemCount / elapsedTime
 
 

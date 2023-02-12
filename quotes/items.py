@@ -9,11 +9,10 @@ from scrapy.loader import ItemLoader
 from itemloaders.processors import MapCompose, TakeFirst
 from datetime import datetime as dt
 
-
+""" Definition of functions used in the Itemloader """
 def removeQuotes(text):
     """ Strip unicode characters """
     return text.strip(u'\u201c'u'\u201d')
-
 
 def toDatetime(text):
     """ Convert string (format example: May 15, 2003) to datetime"""
@@ -21,7 +20,6 @@ def toDatetime(text):
 
 def toStringDatetime(datetimeObject):
     return datetimeObject.strftime('%Y-%m-%d')
-
 
 def parse_location(text):
     "Parses location by stripping useless part of the string"

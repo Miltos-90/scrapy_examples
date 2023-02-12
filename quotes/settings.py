@@ -18,7 +18,7 @@ NEWSPIDER_MODULE = 'quotes.spiders'
 ROBOTSTXT_OBEY   = True 
 
 # Configure logging
-LOG_FILE         = 'logger.log'
+LOG_FILE         = './logger.log'
 LOG_FORMAT       = '%(levelname)s: %(message)s'
 LOG_LEVEL        = logging.DEBUG
 

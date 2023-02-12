@@ -23,8 +23,8 @@ class Database(ABC, metaclass = Singleton):
 
     def __init__(self, 
         pathToFile   : str, # sqlite .db file
-        pragmaScript : str, # sqlitescript (usable with .executescript()) that defines the db PRAGMAs (https://www.sqlite.org/pragma.html)
-        schemaScript : str
+        pragmaScript : str, # sqlitescript that defines the db pragmas (https://www.sqlite.org/pragma.html)
+        schemaScript : str  # sqlitescript that defines the db schema
         ):
 
         self.file       = pathToFile
