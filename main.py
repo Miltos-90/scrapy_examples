@@ -10,7 +10,6 @@
 
 """
 TODO
-clean up / comment extension
 check how not to be banned
 """
 
@@ -22,20 +21,14 @@ def clean():
         if os.path.isfile(filePath): 
             os.remove(filePath)
 
-#clean()
+clean()
 # ===============================================================
 
 """
-Downloadermiddleware:
-record request from spider
-record response
-if response is an error (see here: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#client_error_responses)
-retry based on error (in spider)
-else get next link directly (in spider)
-
+TODO:
+downloader middleware: ignore or process requests acccording to their appearance in the url daabase -> line 126
+insertQuote -> optimize with 1 query
 """
-
-        
 
 from scrapy.crawler import CrawlerProcess
 from quotes.spiders.quotes_spider import QuotesSpider
