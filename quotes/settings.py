@@ -25,10 +25,12 @@ LOG_LEVEL        = logging.DEBUG
 # Disable cookies (enabled by default)
 COOKIES_ENABLED  = False
 
+# Disable duplicate URL filter
+DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
+
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES   = {
-    'quotes.pipelines.UrlManagementPipeline': 0,
     'quotes.pipelines.DefaultValuesPipeline': 1,
     'quotes.pipelines.SaveQuotesPipeline'   : 2,
 }
@@ -39,6 +41,12 @@ DOWNLOADER_MIDDLEWARES = {
     'quotes.middlewares.UrlManagementMiddleware': 0,
 }
 
+# Enable or disable spider middlewares
+# See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+SPIDER_MIDDLEWARES = {
+    'quotes.middlewares.QuotesSpiderMiddleware': 1,
+}
+
 # Enable or disable extensions and related settings
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 EXTENSIONS = {
@@ -47,7 +55,6 @@ EXTENSIONS = {
 
 PROGRESS_MONITOR_ENABLED = True
 PROGRESS_MONITOR_STEP    = 10
-
 
 # Database-related settings
 DB_FILE     = "./scrapy_quotes.db"
@@ -65,7 +72,7 @@ DB_SCHEMA = """
     -- Author data
     CREATE TABLE IF NOT EXISTS authors (
         id          INTEGER PRIMARY KEY,
-        name        TEXT    UNIQUE NOT NULL,
+        name        TEXT    NOT NULL UNIQUE,
         birthdate   TEXT    NOT NULL,
         birthplace  TEXT    NOT NULL,
         bio         TEXT    NOT NULL
@@ -74,7 +81,7 @@ DB_SCHEMA = """
     -- Quote data
     CREATE TABLE IF NOT EXISTS quotes (
         id          INTEGER PRIMARY KEY,
-        quote       TEXT    UNIQUE NOT NULL,
+        quote       TEXT    NOT NULL UNIQUE,
         tags        TEXT    NOT NULL,
         author_id   INTEGER NOT NULL,
         FOREIGN KEY(author_id)  REFERENCES authors(id)
@@ -83,9 +90,11 @@ DB_SCHEMA = """
 
 URL_DB_SCHEMA = """
     CREATE TABLE IF NOT EXISTS pages (
-            id     INTEGER  PRIMARY KEY,
-            url    TEXT     NOT NULL UNIQUE,
-            date   TEXT     NOT NULL
+            id            INTEGER  PRIMARY KEY,
+            url           TEXT     NOT NULL UNIQUE,
+            date          TEXT     NOT NULL,
+            status_code   INTEGER  NOT NULL,
+            crawl_success INTEGER  NOT NULL
         );
 """
 
@@ -112,11 +121,7 @@ URL_DB_SCHEMA = """
 #   'Accept-Language': 'en',
 #}
 
-# Enable or disable spider middlewares
-# See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'quotes.middlewares.QuotesSpiderMiddleware': 543,
-#}
+
 
 
 # Enable and configure the AutoThrottle extension (disabled by default)

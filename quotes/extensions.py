@@ -13,7 +13,7 @@ class ProgressMonitor:
 
     def __init__(self, numSteps):
 
-        self.numSteps  = numSteps  # Print every <numSteps> processed items
+        self.numSteps  = numSteps      # Print every <numSteps> processed items
         self.itemCount = 0             # Counter for the number of items processed
         self.startTime = None          # Time the crawler started 
         self.tFormat  = '%d-%m-%Y %H:%M:%S'
@@ -91,10 +91,19 @@ class ProgressMonitor:
         """ Get last visited URL """
 
         self.db.connect()
-        lastPage = self.db.last()
+
+        query = """
+            WITH finished_pages (id, url) AS (
+                SELECT id, url FROM pages WHERE crawl_success = 1
+            )
+            SELECT url 
+            FROM finished_pages 
+            WHERE id = (SELECT MAX(id) FROM finished_pages);    
+        """
+        response = self.db.cursor.execute(query).fetchone()[0]
         self.db.close()
 
-        return lastPage
+        return response
 
 
     def _scrapeRate(self):

@@ -4,28 +4,13 @@
 # by commenting out the setting in the settings.py file
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
-from quotes.databases import QuoteDatabase, URLDatabase
-from scrapy import Spider
-
-
-class UrlManagementPipeline(object):
-    """ Insers visited URLs to the database """
-
-    def __init__(self):
-        self.db = URLDatabase()
-
-    def process_item(self, item, spider):
-
-        self.db.connect()
-        self.db.insert(item['url'])
-        self.db.close()
-        return item
+from quotes.databases import QuoteDatabase
 
 
 class DefaultValuesPipeline(object):
     """ Sets default values to all fields """
 
-    def process_item(self, item, spider: Spider):
+    def process_item(self, item, spider):
         """ Save quotes in the database
             This method is called for every item pipeline component
         """
@@ -49,7 +34,7 @@ class SaveQuotesPipeline(object):
 
         return
 
-    def process_item(self, item, spider: Spider):
+    def process_item(self, item, spider):
         """ Save quotes in the database
             This method is called for every item pipeline component
         """

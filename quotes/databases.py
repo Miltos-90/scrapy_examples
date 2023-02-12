@@ -99,11 +99,10 @@ class QuoteDatabase(Database):
     def insertQuote(self, item):
         """ Inserts an item's quote in the database """
 
-        query = "SELECT id FROM authors WHERE name = ?"
-        task  = (item['author'], )
+        query  = "SELECT id FROM authors WHERE name = ?"
+        task   = (item['author'], )
         authID = self.cursor.execute(query, task).fetchone()[0]
-
-        query  = "INSERT OR IGNORE INTO quotes (quote, tags, author_id) VALUES (?, ?, ?)"
+        query  = "INSERT INTO quotes (quote, tags, author_id) VALUES (?, ?, ?)"
         task   = (item['quote'], item['tag'], authID)
 
         self.cursor.execute(query, task)
@@ -120,21 +119,21 @@ class URLDatabase(Database):
         ):
 
         super().__init__(pathToFile, pragmaScript, schemaScript)
+        self.datetimeFormat = "%d/%m/%Y %H:%M:%S"
 
         return
 
 
-    def insert(self, url: str):
-        """ Inserts a url to the database """
+    def insert(self, url:str, date:str, status: int, success: int):
+        """ Inserts the received response status to the database """
 
-        query = "INSERT OR IGNORE INTO pages (url, date) VALUES (?, ?)"
-        task = (url, self._now())
+        query = "INSERT OR IGNORE INTO pages (url, date, status_code, crawl_success) VALUES (?, ?, ?, ?)"
+        task  = (url, date, status, success)
         self.cursor.execute(query, task)
 
         return
 
-
-    def has(self, url:str):
+    def exists(self, url:str):
         """ Checks if a url exists in the database """
 
         query = "SELECT EXISTS(SELECT * FROM pages WHERE url = ?)"
@@ -142,19 +141,3 @@ class URLDatabase(Database):
         out   = self.cursor.execute(query, task).fetchone()[0]
         
         return bool(out)
-
-
-    def last(self):
-        """ Returns the last url that was scraped """
-
-        query = "SELECT url FROM pages WHERE ID = (SELECT MAX(ID) FROM pages)"
-        out   = self.cursor.execute(query)
-        out   = out.fetchone()[0]
-        return out
-
-
-    @staticmethod
-    def _now():
-        return dt.now().strftime("%d/%m/%Y %H:%M:%S")
-
-
