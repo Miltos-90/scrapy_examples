@@ -20,12 +20,12 @@ class QuotesSpider(Spider):
         """
 
         for quoteDiv in response.xpath('//div[@class="quote"]'):
-                
-            quoteItem = self.parseItem(quoteDiv, response.url)
+            
+            quoteItem = self._parseItem(quoteDiv, response.url)
 
             yield from response.follow_all(
                 urls     = quoteDiv.xpath('.//span[contains(text(), "by")]/a/@href').extract(),
-                callback = self.parseAuthor, 
+                callback = self._parseAuthor, 
                 meta     = {'item' : quoteItem}
             )
             
@@ -38,7 +38,7 @@ class QuotesSpider(Spider):
         return
 
 
-    def parseItem(self, response: TextResponse, url: str):
+    def _parseItem(self, response: TextResponse, url: str):
         """ Parser for the item details """
 
         loader = QuoteLoader(selector = response)
@@ -49,7 +49,7 @@ class QuotesSpider(Spider):
         return loader.load_item()
 
 
-    def parseAuthor(self, response: TextResponse):
+    def _parseAuthor(self, response: TextResponse):
         """ Parser for the author details """
 
         loader = QuoteLoader(item = response.meta['item'], selector = response)
