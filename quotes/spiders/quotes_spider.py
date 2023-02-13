@@ -3,15 +3,20 @@ from ..items import QuoteLoader
 from scrapy import Spider
 from scrapy.utils.project import get_project_settings
 from scrapy.http import TextResponse
+from scrapy.item import Item
+from ..databases import QuoteDatabase
 
 SETTINGS = get_project_settings()
 
 
 class QuotesSpider(Spider):
 
-    allowed_domains = SETTINGS["ALLOWED_DOMAINS"]
-    start_urls      = SETTINGS["START_URLS"]
-    name            = SETTINGS["BOT_NAME"]
+    def __init__(self):
+
+        self.allowed_domains = SETTINGS["ALLOWED_DOMAINS"]
+        self.start_urls      = SETTINGS["START_URLS"]
+        self.name            = SETTINGS["BOT_NAME"]
+        self.db              = QuoteDatabase()
 
 
     def parse(self, response: TextResponse):
@@ -21,13 +26,21 @@ class QuotesSpider(Spider):
 
         for quoteDiv in response.xpath('//div[@class="quote"]'):
             
+            self.db.connect()
             quoteItem = self._parseItem(quoteDiv)
+            dbOut = self.db.getAuthor(quoteItem['author'])
+            self.db.close()
 
-            yield from response.follow_all(
-                urls     = quoteDiv.xpath('.//span[contains(text(), "by")]/a/@href').extract(),
-                callback = self._parseAuthor, 
-                meta     = {'item' : quoteItem}
-            )
+            if dbOut is not None:
+                yield self._attachAuthor(quoteItem, dbOut)
+                
+            else:
+                yield from response.follow_all(
+                    urls        = quoteDiv.xpath('.//span[contains(text(), "by")]/a/@href').extract(),
+                    callback    = self._parseAuthor, 
+                    dont_filter = True,
+                    meta        = {'item' : quoteItem}
+                )
             
         # Yield link to the next page
         yield from response.follow_all(
@@ -36,7 +49,6 @@ class QuotesSpider(Spider):
         )
 
         return
-
 
     def _parseItem(self, response: TextResponse):
         """ Parser for the item details """
@@ -57,3 +69,14 @@ class QuotesSpider(Spider):
         loader.add_xpath(field_name = 'author_bio',       xpath = '//div[@class = "author-description"]/text()')
 
         yield loader.load_item()
+
+    def _attachAuthor(self, item: Item, authorData: tuple):
+        """ Adds author information from the existing database """
+
+        _, _, birthDate, birthPlace, bio = authorData
+        loader = QuoteLoader(item = item)
+        loader.add_value(field_name = 'author_birthdate', value = birthDate)
+        loader.add_value(field_name = 'author_birth_loc', value = birthPlace)
+        loader.add_value(field_name = 'author_bio',       value = bio)
+
+        return loader.load_item() 
