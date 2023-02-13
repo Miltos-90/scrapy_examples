@@ -37,9 +37,9 @@ ITEM_PIPELINES   = {
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-    'quotes.middlewares.UrlManagementMiddleware': 0,
-}
+#DOWNLOADER_MIDDLEWARES = {
+#    'quotes.middlewares.QuotesDownloaderMiddleware': 0,
+#}
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
@@ -95,7 +95,7 @@ URL_DB_SCHEMA = """
             date          TEXT     NOT NULL,
             status_code   INTEGER  NOT NULL,
             crawl_success INTEGER  NOT NULL
-        );
+        ) STRICT;
 """
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -120,9 +120,6 @@ URL_DB_SCHEMA = """
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 #   'Accept-Language': 'en',
 #}
-
-
-
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

@@ -30,9 +30,7 @@ Use a Downloader middleware if you need to do one of the following:
 """ 
 
 from scrapy import signals
-from scrapy.exceptions import IgnoreRequest
 from quotes.databases import URLDatabase
-import logging
 
 
 class QuotesSpiderMiddleware:
@@ -64,10 +62,12 @@ class QuotesSpiderMiddleware:
         # Called with the results returned from the Spider, after
         # it has processed the response.
 
-        date = response.headers['date'].decode("utf-8")
-        self.db.connect()
-        self.db.insert(response.url, date, response.status, success = 1)
-        self.db.close()
+        
+        if response.request.dont_filter == False: # Record visited URL
+            date = response.headers['date'].decode("utf-8")
+            self.db.connect()
+            self.db.insert(response.url, date, response.status, success = 1)
+            self.db.close()
 
         # Must return an iterable of Request, or item objects.
         for i in result:
@@ -93,8 +93,7 @@ class QuotesSpiderMiddleware:
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-
-class UrlManagementMiddleware(object):
+class QuotesDownloaderMiddleware(object):
 
     def __init__(self): 
 
@@ -121,12 +120,6 @@ class UrlManagementMiddleware(object):
               installed downloader middleware will be called
         """ 
 
-        self.db.connect()
-        
-        #if self.db.exists(request.url):
-        #    raise IgnoreRequest
-        
-        self.db.close()
         return
 
 
@@ -143,13 +136,15 @@ class UrlManagementMiddleware(object):
         return response
 
     def process_exception(self, request, exception, spider):
-        # Called when a download handler or a process_request()
-        # (from other downloader middleware) raises an exception.
+        """ Called when a download handler or a process_request()
+            (from other downloader middleware) raises an exception.
 
-        # Must either:
-        # - return None: continue processing this exception
-        # - return a Response object: stops process_exception() chain
-        # - return a Request object: stops process_exception() chain
+            Must either:
+            - return None: continue processing this exception
+            - return a Response object: stops process_exception() chain
+            - return a Request object: stops process_exception() chain
+        """
+        
         pass
 
     def spider_opened(self, spider):

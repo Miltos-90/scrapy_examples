@@ -109,6 +109,14 @@ class QuoteDatabase(Database):
 
         return
 
+    
+    def getAuthor(self, name: str) -> tuple:
+        """ Returns data of an author with a given name """
+
+        query = "SELECT * FROM authors WHERE name = ?"
+        task  = (name, )
+        return self.cursor.execute(query, task).fetchone()
+
 
 class URLDatabase(Database):
 
@@ -133,11 +141,16 @@ class URLDatabase(Database):
 
         return
 
+    """
+
+
     def exists(self, url:str):
-        """ Checks if a url exists in the database """
+        # Checks if a url exists in the database 
 
         query = "SELECT EXISTS(SELECT * FROM pages WHERE url = ?)"
         task  = (url, )
         out   = self.cursor.execute(query, task).fetchone()[0]
         
         return bool(out)
+
+    """
