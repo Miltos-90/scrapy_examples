@@ -2,16 +2,10 @@
 # scrapy crawl quotes -o quotes.jsonl:jsonlines
 # More examples and patterns: https://docs.scrapy.org/en/latest/intro/tutorial.html#intro-tutorial
 
-# https://towardsdatascience.com/a-minimalist-end-to-end-scrapy-tutorial-part-i-11e350bcdec0
-# https://github.com/harrywang/scrapy-tutorial/blob/master/tutorial/spiders/quotes_spider_v2.py
+
 # https://datawookie.dev/blog/2021/06/scrapy-rotating-tor-proxy/
 # https://medium.com/hackernoon/web-scraping-tutorial-with-python-tips-and-tricks-db070e70e071
 
-
-"""
-TODO
-check how not to be banned
-"""
 
 # ===============================================================
 def clean():
@@ -26,8 +20,7 @@ clean()
 
 """
 TODO:
-downloader middleware: ignore or process requests acccording to their appearance in the url daabase -> line 126
-insertQuote -> optimize with 1 query
+Optimize insertQuote() inside databases.py to work with a single query.
 """
 
 from scrapy.crawler import CrawlerProcess
