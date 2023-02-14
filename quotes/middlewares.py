@@ -30,8 +30,6 @@ Use a Downloader middleware if you need to do one of the following:
 """ 
 
 from scrapy import signals
-from quotes.databases import URLDatabase
-
 
 class QuotesSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -40,7 +38,6 @@ class QuotesSpiderMiddleware:
 
     def __init__(self): 
 
-        self.db = URLDatabase()
         return
 
 
@@ -59,15 +56,9 @@ class QuotesSpiderMiddleware:
         return None
 
     def process_spider_output(self, response, result, spider):
-        # Called with the results returned from the Spider, after
-        # it has processed the response.
-
-        
-        if response.request.dont_filter == False: # Record visited URL
-            date = response.headers['date'].decode("utf-8")
-            self.db.connect()
-            self.db.insert(response.url, date, response.status, success = 1)
-            self.db.close()
+        """ Called with the results returned from the Spider, after
+            it has processed the response.
+        """
 
         # Must return an iterable of Request, or item objects.
         for i in result:
@@ -97,7 +88,6 @@ class QuotesDownloaderMiddleware(object):
 
     def __init__(self): 
 
-        self.db = URLDatabase()
         return
     
     @classmethod
@@ -111,13 +101,6 @@ class QuotesDownloaderMiddleware(object):
     def process_request(self, request, spider):
         """ Called for each request that goes through the downloader
             middleware (i.e. right before Scrapy sends the request to the website).
-
-            Must either:
-            - return None: continue processing this request
-            - or return a Response object
-            - or return a Request object
-            - or raise IgnoreRequest: process_exception() methods of 
-              installed downloader middleware will be called
         """ 
 
         return
@@ -126,11 +109,6 @@ class QuotesDownloaderMiddleware(object):
     def process_response(self, request, response, spider):
         """ Called with the response returned from the downloader 
             (i.e. right before it is being passed to the spider).
-
-            Must either;
-            - return a Response object
-            - return a Request object
-            - or raise IgnoreRequest
         """
 
         return response
@@ -138,15 +116,9 @@ class QuotesDownloaderMiddleware(object):
     def process_exception(self, request, exception, spider):
         """ Called when a download handler or a process_request()
             (from other downloader middleware) raises an exception.
-
-            Must either:
-            - return None: continue processing this exception
-            - return a Response object: stops process_exception() chain
-            - return a Request object: stops process_exception() chain
         """
         
         pass
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
-

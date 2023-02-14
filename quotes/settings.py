@@ -17,6 +17,15 @@ SPIDER_MODULES   = ['quotes.spiders']
 NEWSPIDER_MODULE = 'quotes.spiders'
 ROBOTSTXT_OBEY   = True 
 
+# Configure a delay for requests for the same website (default: 0)
+# See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
+# See also autothrottle settings and docs
+DOWNLOAD_DELAY = 0 # The amount of time (in secs) that the downloader should wait before downloading consecutive pages from the same website.
+RANDOMIZE_DOWNLOAD_DELAY = False # wait a random amount of time (between 0.5 * DOWNLOAD_DELAY and 1.5 * DOWNLOAD_DELAY) while fetching requests from the same website.
+DOWNLOAD_TIMEOUT = 30 # The amount of time (in secs) that the downloader will wait before timing out.
+# The download delay setting will honor only one of:
+CONCURRENT_REQUESTS_PER_DOMAIN = 16 # maximum number of concurrent (i.e. simultaneous) requests that will be performed to any single domain.
+
 # Configure logging
 LOG_FILE         = './logger.log'
 LOG_FORMAT       = '%(levelname)s: %(message)s'
@@ -35,6 +44,11 @@ ITEM_PIPELINES   = {
     'quotes.pipelines.SaveQuotesPipeline'   : 2,
 }
 
+# Retrying failed status
+RETRY_ENABLED    = True
+RETRY_TIMES      = 5
+RETRY_HTTP_CODES = [400, 500, 502, 503, 504, 522, 524, 408, 429]
+
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
@@ -43,9 +57,9 @@ ITEM_PIPELINES   = {
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-SPIDER_MIDDLEWARES = {
-    'quotes.middlewares.QuotesSpiderMiddleware': 1,
-}
+#SPIDER_MIDDLEWARES = {
+#   'quotes.middlewares.QuotesSpiderMiddleware': 1,
+#}
 
 # Enable or disable extensions and related settings
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -58,7 +72,6 @@ PROGRESS_MONITOR_STEP    = 10
 
 # Database-related settings
 DB_FILE     = "./scrapy_quotes.db"
-URL_DB_FILE = "./visited_urls.db" 
 
 DB_PRAGMA = """
     PRAGMA foreign_keys=ON;
@@ -66,18 +79,7 @@ DB_PRAGMA = """
     PRAGMA synchronous=FULL;
     """
 
-URL_DB_PRAGMA = DB_PRAGMA
-
 DB_SCHEMA = """
-    -- Author data
-    CREATE TABLE IF NOT EXISTS authors (
-        id          INTEGER PRIMARY KEY,
-        name        TEXT    NOT NULL UNIQUE,
-        birthdate   TEXT    NOT NULL,
-        birthplace  TEXT    NOT NULL,
-        bio         TEXT    NOT NULL
-    ) STRICT;
-
     -- Quote data
     CREATE TABLE IF NOT EXISTS quotes (
         id          INTEGER PRIMARY KEY,
@@ -85,10 +87,18 @@ DB_SCHEMA = """
         tags        TEXT    NOT NULL,
         author_id   INTEGER NOT NULL,
         FOREIGN KEY(author_id)  REFERENCES authors(id)
-    ) STRICT; 
-"""
+    ) STRICT;
 
-URL_DB_SCHEMA = """
+    -- Author data
+    CREATE TABLE IF NOT EXISTS authors (
+        id          INTEGER PRIMARY KEY,
+        name        TEXT    NOT NULL UNIQUE,
+        birthdate   TEXT    NOT NULL,
+        birthplace  TEXT    NOT NULL,
+        bio         TEXT    NOT NULL
+    ) STRICT; 
+
+    -- scraped pages schema
     CREATE TABLE IF NOT EXISTS pages (
             id            INTEGER  PRIMARY KEY,
             url           TEXT     NOT NULL UNIQUE,
@@ -103,14 +113,6 @@ URL_DB_SCHEMA = """
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
-
-# Configure a delay for requests for the same website (default: 0)
-# See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
-# See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
-# The download delay setting will honor only one of:
-#CONCURRENT_REQUESTS_PER_DOMAIN = 16
-#CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False

@@ -1,16 +1,15 @@
 from logging import Filter, getLogger
 from scrapy.utils.log import configure_logging 
 from scrapy.utils.project import get_project_settings
+from quotes.databases import Database
+import os
 
 SETTINGS = get_project_settings()
 
-
-""" Logger configuration """
-
+""" =================== LOGGER CONFIGURATION =================== """
 class LoggerFilter(Filter):
     """ Filter that forbids scraped items to be logged """
     def filter(self, record):
-        
         return not record.getMessage().startswith('Scraped from')
 
 configure_logging(
@@ -22,3 +21,20 @@ configure_logging(
         )
 
 getLogger('scrapy.core.scraper').addFilter(LoggerFilter())
+
+
+""" =================== DATABASE CONFIGURATION =================== """
+QuotesDatabase = Database(pathToFile = SETTINGS.get("DB_FILE"))
+
+# If the database does not exist, make it
+if not os.path.isfile(SETTINGS["DB_FILE"]): 
+    QuotesDatabase.make(SETTINGS["DB_SCHEMA"], SETTINGS["DB_PRAGMA"])
+
+else:
+    # If resuming from previous crawl, remove last recorded URL so that it will be re-scraped
+    QuotesDatabase.connect()
+    query = "DELETE FROM pages WHERE id = (SELECT MAX(id) FROM pages);"
+    QuotesDatabase.cursor.execute(query)
+    QuotesDatabase.close()
+
+

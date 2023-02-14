@@ -1,11 +1,9 @@
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from datetime import datetime as dt
-from quotes.databases import URLDatabase
+from quotes import QuotesDatabase
 
-from scrapy import Spider
-
-spider = Spider
+from scrapy import Spider, Item
 
 
 class ProgressMonitor:
@@ -16,8 +14,7 @@ class ProgressMonitor:
         self.numSteps  = numSteps      # Print every <numSteps> processed items
         self.itemCount = 0             # Counter for the number of items processed
         self.startTime = None          # Time the crawler started 
-        self.tFormat  = '%d-%m-%Y %H:%M:%S'
-        self.db        = URLDatabase() # Database with URLs
+        self.tFormat   = '%d-%m-%Y %H:%M:%S'
 
 
     @classmethod
@@ -40,7 +37,7 @@ class ProgressMonitor:
         return ext
 
 
-    def spiderOpened(self, spider):
+    def spiderOpened(self, spider: Spider):
         """ Execute on spider_opened signal """
 
         self.startTime = dt.now()
@@ -48,14 +45,14 @@ class ProgressMonitor:
         return 
 
 
-    def spiderClosed(self, spider):
+    def spiderClosed(self, spider: Spider):
         """ Execute on spider_closed signals """
 
         print("\n{} | Crawler stopped.".format(self._now()))
         return 
 
 
-    def itemScraped(self, item, spider):
+    def itemScraped(self, item: Item, spider: Spider):
         """ Execute on item_scraped signals """
 
         self.itemCount += 1
@@ -90,7 +87,7 @@ class ProgressMonitor:
     def _lastUrl(self):
         """ Get last visited URL """
 
-        self.db.connect()
+        QuotesDatabase.connect()
 
         query = """
             WITH finished_pages (id, url) AS (
@@ -100,13 +97,13 @@ class ProgressMonitor:
             FROM finished_pages 
             WHERE id = (SELECT MAX(id) FROM finished_pages);    
         """
-        response = self.db.cursor.execute(query).fetchone()[0]
-        self.db.close()
+        response = QuotesDatabase.cursor.execute(query).fetchone()[0]
+        QuotesDatabase.close()
 
         return response
 
 
-    def _scrapeRate(self):
+    def _scrapeRate(self) -> float:
         """ Compute scraping speed [items/sec] """
 
         elapsedTime = (dt.now() - self.startTime).total_seconds()

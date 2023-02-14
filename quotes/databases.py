@@ -1,13 +1,7 @@
 """ Script that collects all helper functions used throughout """
 
-from scrapy.utils.project import get_project_settings
-from scrapy.exceptions import IgnoreRequest
-from datetime import datetime as dt
 from sqlite3 import connect as sqlconnect
 from abc import ABCMeta, ABC
-
-SETTINGS = get_project_settings()
-
 
 class Singleton(ABCMeta):
     """ Singleton metaclass """
@@ -21,17 +15,11 @@ class Singleton(ABCMeta):
 class Database(ABC, metaclass = Singleton):
     """ Generic database class """
 
-    def __init__(self, 
-        pathToFile   : str, # sqlite .db file
-        pragmaScript : str, # sqlitescript that defines the db pragmas (https://www.sqlite.org/pragma.html)
-        schemaScript : str  # sqlitescript that defines the db schema
-        ):
+    def __init__(self, pathToFile : str):
 
         self.file       = pathToFile
         self.connection = None
         self.cursor     = None
-
-        self._make(schemaScript, pragmaScript)
 
         return
 
@@ -59,7 +47,7 @@ class Database(ABC, metaclass = Singleton):
 
         return
 
-    def _make(self,
+    def make(self,
         schemaScript: str,  # sqlite script that defines the schema
         pragmaScript: str): # sqlite script that defines the pragmas
         """ Creates an empty database """
@@ -71,86 +59,3 @@ class Database(ABC, metaclass = Singleton):
 
         return
 
-
-class QuoteDatabase(Database):
-    """ Reader/writer of the quotes database """
-
-    def __init__(self,
-        pathToFile   = SETTINGS.get("DB_FILE"),
-        pragmaScript = SETTINGS.get("DB_PRAGMA"),
-        schemaScript = SETTINGS.get("DB_SCHEMA")
-        ):
-
-        super().__init__(pathToFile, pragmaScript, schemaScript)
-        return
-
-
-    def insertAuthor(self, item):
-        """ Inserts an item's author in the database"""
-
-        query = "INSERT OR IGNORE INTO authors (name, birthdate, birthplace, bio) VALUES (?, ?, ?, ?)"
-        task  = (item['author'], item['author_birthdate'], item['author_birth_loc'], item['author_bio'])
-
-        self.cursor.execute(query, task)
-
-        return
-
-
-    def insertQuote(self, item):
-        """ Inserts an item's quote in the database """
-
-        query  = "SELECT id FROM authors WHERE name = ?"
-        task   = (item['author'], )
-        authID = self.cursor.execute(query, task).fetchone()[0]
-        query  = "INSERT INTO quotes (quote, tags, author_id) VALUES (?, ?, ?)"
-        task   = (item['quote'], item['tag'], authID)
-
-        self.cursor.execute(query, task)
-
-        return
-
-    
-    def getAuthor(self, name: str) -> tuple:
-        """ Returns data of an author with a given name """
-
-        query = "SELECT * FROM authors WHERE name = ?"
-        task  = (name, )
-        return self.cursor.execute(query, task).fetchone()
-
-
-class URLDatabase(Database):
-
-    def __init__(self, 
-        pathToFile   = SETTINGS.get("URL_DB_FILE"),
-        pragmaScript = SETTINGS.get("URL_DB_PRAGMA"),
-        schemaScript = SETTINGS.get("URL_DB_SCHEMA")
-        ):
-
-        super().__init__(pathToFile, pragmaScript, schemaScript)
-        self.datetimeFormat = "%d/%m/%Y %H:%M:%S"
-
-        return
-
-
-    def insert(self, url:str, date:str, status: int, success: int):
-        """ Inserts the received response status to the database """
-
-        query = "INSERT OR IGNORE INTO pages (url, date, status_code, crawl_success) VALUES (?, ?, ?, ?)"
-        task  = (url, date, status, success)
-        self.cursor.execute(query, task)
-
-        return
-
-    """
-
-
-    def exists(self, url:str):
-        # Checks if a url exists in the database 
-
-        query = "SELECT EXISTS(SELECT * FROM pages WHERE url = ?)"
-        task  = (url, )
-        out   = self.cursor.execute(query, task).fetchone()[0]
-        
-        return bool(out)
-
-    """
