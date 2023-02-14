@@ -15,7 +15,7 @@ def clean():
         if os.path.isfile(filePath): 
             os.remove(filePath)
 
-clean()
+#clean()
 # ===============================================================
 
 """
