@@ -6,6 +6,9 @@
 # https://datawookie.dev/blog/2021/06/scrapy-rotating-tor-proxy/
 # https://medium.com/hackernoon/web-scraping-tutorial-with-python-tips-and-tricks-db070e70e071
 
+# Have a look here:
+# https://github.com/MichaelTatarski/fake-http-header
+
 
 # ===============================================================
 def clean():
@@ -15,7 +18,7 @@ def clean():
         if os.path.isfile(filePath): 
             os.remove(filePath)
 
-#clean()
+clean()
 # ===============================================================
 
 """
