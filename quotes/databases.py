@@ -1,18 +1,10 @@
 """ Script that collects all helper functions used throughout """
 
 from sqlite3 import connect as sqlconnect
-from abc import ABCMeta, ABC
-
-class Singleton(ABCMeta):
-    """ Singleton metaclass """
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+from quotes.utils import Singleton
 
 
-class Database(ABC, metaclass = Singleton):
+class Database(metaclass = Singleton):
     """ Generic database class """
 
     def __init__(self, pathToFile : str):
