@@ -1,26 +1,13 @@
+""" This module implements the HeaderGenerator object for a request """
+
 import json
 import random as rd
-import re
 from abc import ABC
 import os
 
 
-def RelativeQualityFactorGenerator(num) -> list:
-    """ Returns a list of <num> randomly chosen relative quality factors """
-
-    minq  = round(1 / num, 1)       # Minimum q value that can be set (maximum = 1.0)
-    dq    = (1.0-minq) / (num + 1)  # Reduction rate between cosecutive q values
-    qVals = [""]                    # To be populated with the q values
-    q     = 1.0                     # Assume first q factor to be equal to 1
-
-    for _ in range(1, num):
-        q = rd.uniform(q - dq, q - 2 * dq)
-        q = max(0.1, round(q, 1))
-        qVals.append(f";q={q}")
-
-    return qVals
-
 class HTTPHeaderGenerator(ABC):
+    """ Generic HTTP Header generator class """
 
     def __init__(self, pathToFile: str): 
         
@@ -33,28 +20,54 @@ class HTTPHeaderGenerator(ABC):
         return
 
     def __call__(self, s: str) -> str:
+        """ Randomly choose an element from the elements of the dictionary <data>
+            associated with the attribute <s>
+        """
 
         if s in self.data.keys(): 
             return rd.choice(self.data[s])
         else:
             raise ValueError('{s} is not implemented.')
 
-
     @staticmethod
     def _readFile(file:str, mode:str = 'r', encoding:str = 'utf-8') -> dict:
-        """ Reads a .json file"""
+        """ Reads a .json file and returns the contents in a dictionary """
 
         with open(file, mode, encoding = encoding) as f:
             data = json.load(f)
 
         return data
 
+    @staticmethod
+    def _addqFactors(l:list) -> list:
+        """ Appends randomly generated relative quality factors (q-factors) 
+            to the elements (strings) of the input list l.
+        """
+        
+        num   = len(l)
+        minq  = round(1 / num, 1)       # Minimum q value that can be set (maximum = 1.0)
+        dq    = (1.0-minq) / (num + 1)  # Reduction rate between cosecutive q values
+        qVals = [""]                    # To be populated with the q values
+        q     = 1.0                     # Assume first q factor to be equal to 1
+
+        for _ in range(1, num):
+            q = rd.uniform(q - dq, q - 2 * dq)
+            q = max(0.1, round(q, 1))
+            qVals.append(f";q={q}")
+
+        l = [x + q for x, q in zip(l, qVals)] # Append to the elements of the input list
+
+        return l
+
+
 class Accept(HTTPHeaderGenerator):
+    """ Generates a random 'Accept' header """
     
-    def __call__(self, browser):
-        return self.data[browser]
+    def __call__(self, browser): return self.data[browser]
+
 
 class AcceptEncoding(HTTPHeaderGenerator):
+    """ Generates a random 'Accept-Encoding' header """
 
     def __init__(self, pathToFile: str):
 
@@ -66,7 +79,6 @@ class AcceptEncoding(HTTPHeaderGenerator):
     def __call__(self, 
         qFactors: bool = True # Indicates if relative quality factors should be included
         ) -> str:
-        """ Generates a random accept-encoding header tab """
         
         num      = rd.randint(1, len(self.data)) # Choose a random number <num> of encoding strings to be included in the header
         encoders = rd.sample(self.data, num)     # Make <k> unique random choices from the population of accepted encoders
@@ -80,13 +92,13 @@ class AcceptEncoding(HTTPHeaderGenerator):
             encoders.insert(0, 'gzip')
 
         if qFactors:
-            factors  = RelativeQualityFactorGenerator(len(encoders))
-            encoders = [e + f for e, f in zip(encoders, factors)]
+            encoders = self._addqFactors(encoders)
 
         return ", ".join(encoders)
 
+
 class AcceptLanguage(HTTPHeaderGenerator):
-    """ Generates a random language header tab """
+    """ Generates a random 'Accept-Language' header """
 
     @staticmethod
     def _makeLanguageList(
@@ -99,14 +111,12 @@ class AcceptLanguage(HTTPHeaderGenerator):
             languages = [domain]
             
         else:
-            
             languages = other
             if domain not in languages: 
                 languages.append(domain)
 
         return languages
     
-
     def __call__(self, 
         domain    : str,           # Domain to relate languages to
         universal : list = None,   # Languages that are always accepted. Set to None to deactivate
@@ -119,12 +129,11 @@ class AcceptLanguage(HTTPHeaderGenerator):
         try:    domLang = super().__call__(domain)
         except: domLang = super().__call__("eu")
 
-        # Make languages list.
+        # Make languages list and add the q factors if needed
         languages = self._makeLanguageList(domLang, universal)
 
-        if qFactors: # Add relative quality factors
-            factors   = RelativeQualityFactorGenerator(len(languages))
-            languages = [e + f for e, f in zip(languages, factors)]
+        if qFactors:
+            languages = self._addqFactors(languages)
 
         return ",".join(languages)
 
