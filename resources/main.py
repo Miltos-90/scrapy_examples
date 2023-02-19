@@ -7,12 +7,17 @@
 # https://www.whatismybrowser.com/detect/what-http-headers-is-my-browser-sending
 # https://apify.github.io/fingerprint-suite/docs/guides/header-generator/
 
+# User agent generator
+# https://github.com/iamdual/ua-generator
+
 # User agent lists
 # https://gist.github.com/pzb/b4b6f57144aea7827ae4
 # https://pastebin.com/csVFA72Y
 # https://www.useragentstring.com/pages/All/
 # https://developers.whatismybrowser.com/useragents/database/
 # https://www.whatismybrowser.com/guides/the-latest-user-agent/chrome
+# https://github.com/tamimibrahim17/List-of-user-agents
+# https://github.com/N0taN3rd/userAgentLists/tree/master/uagents/csv
     
 
 from headers import *
@@ -66,6 +71,7 @@ class GenericHeaderGenerator(HTTPHeaderGenerator):
             "Accept"          : self.Accept(browser),
             "Accept-Language" : self.Language(domain, universal = ['en', 'en-GB', 'en-US'], qFactors = True),
             "Accept-Encoding" : self.Encoder(qFactors = rd.random() >= 0.5),
+            "DNT"             : "1",
             "Upgrade-insecure-requests": "1",
             "Sec-Fetch-Site": "same-site",
             "Sec-Fetch-Mode": "navigate",
@@ -127,13 +133,14 @@ if __name__ == "__main__":
         12  Yes         Sec-Fetch-Dest
         13  Yes         Sec-CH-Prefers-Reduced-Motion 
         ---------------------------------------------
-        (For more info see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+        For more info see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers, https://github.com/WICG/ua-client-hints
 
         """
 
         s = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
-        #s = "Samsung SM-T820 / Android 9 / Chrome Mobile WebView 85.0.4183"
-        #s = "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.49"
+        s = "Samsung SM-T820 / Android 9 / Chrome Mobile WebView 85.0.4183"
+        s = "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.49"
+        s = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.41"
 
         gg = UAParser.parse(s)
         isMobile = DetectMobileBrowser()
@@ -155,13 +162,31 @@ if __name__ == "__main__":
         print('7', 'Sec-CH-UA-Platform', ':', platform)
         print('8', 'Sec-CH-UA-Platform-Version', ':', platformVersion)
 
+        brand   = _format(gg['browser']['name'])
+        version = _format(gg['browser']['major'])
+
+        print(brand, version)
+
+        #Not A(Brand
+
+        #rd.choi
+        #print()
+
+        #    ["edge", "Microsoft Edge"],
+        #    ["opera", "Opera"],
+        #    ["firefox", "Mozilla Firefox"],
+        #    ["chrome", "Google Chrome"],
+        #    ["safari", "Apple Safari"],
+        #    ["msie", "Internet Explorer"]
+        
+
     """
     Sec-CH-UA: "(Not(A:Brand";v="8", "Chromium";v="98"    
     Sec-CH-UA: " Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"
     Sec-CH-UA: " Not A;Brand";v="99", "Chromium";v="96", "Microsoft Edge";v="96"
     Sec-CH-UA: "Opera";v="81", " Not;A Brand";v="99", "Chromium";v="95"
     """
-    
+
         
         
 
