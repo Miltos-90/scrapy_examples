@@ -3,7 +3,7 @@ import software_data as data
 import string
 
 
-class VersionGenerator():
+class SoftwareGenerator():
 
     def __init__(self, versions):
         
@@ -39,30 +39,52 @@ class VersionGenerator():
 
         return d
 
-class BrowserGenerator():
+class BrowserGenerator(SoftwareGenerator):
 
     def __init__(self):
 
-        self.names    = list(data.browsers.keys())
-        self.versions = VersionGenerator(data.browsers)
+        super().__init__(data.browsers)
+        self.names = list(data.browsers.keys())
 
     def __call__(self, name): 
-        return self.versions(name)
 
-class AndroidOSGenerator():
+        return super(BrowserGenerator, self).__call__(name)
+ 
 
-    def __init__(self):
+# TODO: Do you need systems in here or on the platrform generator?
+class OperatingSystemGenerator(SoftwareGenerator):
+
+    def __init__(self, 
+        versions : dict = data.operating_systems,
+        systems  : list = list(data.operating_systems.keys())
+        ):
+
+        super().__init__(versions)
+        self.names = systems
+
+    def __call__(self, name):
+
+        return super(OperatingSystemGenerator, self).__call__(name)
+
+# TODO: Do you need brands in here or on the platform generator?. You do, w/ fefault values. But not on the generic OS generator
+class AndroidOSGenerator(OperatingSystemGenerator):
+
+    def __init__(self, 
+        brands   : list = list(data.android.versions.keys()), 
+        versions : dict = data.android.versions, 
+        devices  : dict = data.android.devices):
         
-        self.brands   = list(data.android.versions.keys())
-        self.versions = VersionGenerator(data.android.versions)
-        self.devices  = data.android.devices
+        super().__init__(versions, brands)
+        self.devices  = devices
 
         return
 
-    def __call__(self):
+    def __call__(self, brand: str = None):
 
-        brand = choice(self.brands)
-        os    = self.versions(brand)
+        brand = choice(self.names)
+        os    = super(AndroidOSGenerator, self).__call__(brand)
+
+        # Make Android-specific details
         os['build_number'] = self._buildNumber(brand, os['build_number'])
         os['device_name']  = choice(self.devices[brand])
 
@@ -88,32 +110,26 @@ class AndroidOSGenerator():
 
         return bNo
 
-class OperatingSystemGenerator():
-
-    def __init__(self):
-
-        self.names     = list(data.operating_systems.keys())
-        self.names.append('android')
-        self.versions  = VersionGenerator(data.operating_systems)
-        self.androidOS = AndroidOSGenerator()
-
-    def __call__(self, name):
-
-        if name == 'android': return self.androidOS()
-        else                : return self.versions(name)
 
 class PlatformGenerator():
 
     def __init__(self):
-        self.os      = OperatingSystemGenerator()
-        self.browser = BrowserGenerator()
+        self.os        = OperatingSystemGenerator()
+        self.androidOs = AndroidOSGenerator()
+        self.browser   = BrowserGenerator()
+        self.osList    = self.os.names + ['android']
+        self.browserList = self.browser.names
 
     def __call__(self, osName:str = None, brName: str = None):
 
-        if osName is None : osName = choice(self.os.names)
-        if brName is None : brName = choice(self.browser.names)
+        if osName is None : osName = choice(self.osList)
+        if brName is None : brName = choice(self.browserList)
 
-        os      = {'name': osName, 'version': self.os(osName)}
+        if osName != 'android':
+            os = {'name': osName, 'version': self.os(osName)}
+        else:
+            os = {'name': osName, 'version': self.androidOs()}
+
         browser = {'name': brName, 'version': self.browser(brName)}
 
         return Platform(os, browser)
