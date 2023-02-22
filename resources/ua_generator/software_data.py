@@ -171,7 +171,7 @@ class android:
         * https://firmware.gem-flash.com/index.php?a=downloads&b=folder&id=980
         * https://gist.github.com/iamdual/4f7c5a6d9ac1e0de8272fb062cf2aaad
     """
-        
+    
     devices = {
         "nexus"   : ('Nexus 5', 'Nexus 5X', 'Nexus 6', 'Nexus 6P', 'Nexus 9'),
         "pixel"   : ('Pixel 2', 'Pixel 2 XL', 'Pixel 3', 'Pixel 3a', 'Pixel 3a XL', 'Pixel 3 XL', 'Pixel 4',
