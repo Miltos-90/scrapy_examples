@@ -94,7 +94,6 @@ browsers = { # browser name: major version : {additional key/value pairs for min
         },
         }
 
-
 operating_systems = {
     # OS name: major version : {additional key/value pairs for minor versions and additional properties}
     'ios' : {       # Source: # https://en.wikipedia.org/wiki/IOS_version_history
@@ -158,7 +157,6 @@ operating_systems = {
         '10.0'
     }
 }
-
 
 class android:
 
@@ -389,3 +387,78 @@ class android:
     }
     }
 
+# User agent templates for each operating system and browser
+templates = {
+    ('windows', 'chrome') : (
+        'Mozilla/5.0 (Windows NT {windows}; Win64; x64) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome} Safari/{webkit}',
+        'Mozilla/5.0 (Windows NT {windows}; WOW64) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome} Safari/{webkit}'
+    ),
+
+    ('windows', 'edge') : (
+        'Mozilla/5.0 (Windows NT {windows}; Win64; x64) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome} Safari/{webkit} Edg/{chrome}',
+    ),
+
+    ('windows', 'firefox') : (
+        'Mozilla/5.0 (Windows NT {windows}; Win64; x64; rv:{firefox}) Gecko/20100101 Firefox/{firefox}',
+        'Mozilla/5.0 (Windows NT {windows}; WOW64; rv:{firefox}) Gecko/20100101 Firefox/{firefox}',
+    ),
+
+    ('linux', 'chrome') : (
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome} Safari/{webkit}',
+        'Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome} Safari/{webkit}',
+    ),
+
+    ('linux', 'edge') : (
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome} Safari/{webkit} Edg/{chrome}',
+    ),
+
+    ('linux', 'firefox') : (
+        'Mozilla/5.0 (X11; Linux x86_64; rv:{firefox}) Gecko/20100101 Firefox/{firefox}',
+        'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:{firefox}) Gecko/20100101 Firefox/{firefox}',
+    ),
+
+    ('android', 'chrome') : (
+        'Mozilla/5.0 (Linux; Android {android}{device}{build}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{chrome} Mobile Safari/{webkit}',
+    ),
+
+    ('android', 'edge') : (
+        'Mozilla/5.0 (Linux; Android {android}{device}{build}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{chrome} Mobile Safari/{webkit} EdgA/{chrome}',
+    ),
+
+    ('android', 'firefox') : (
+        'Mozilla/5.0 (Android {android}; Mobile; rv:{firefox}) Gecko/{firefox} Firefox/{firefox}',
+    ),
+
+    ('macos', 'chrome') : (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X {macos}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome} Safari/{webkit}',
+    ),
+
+    ('macos', 'edge') : (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X {macos}) AppleWebKit/{webkit} (KHTML, like Gecko) Chrome/{chrome} Safari/{webkit} Edg/{chrome}',
+    ),
+
+    ('macos', 'safari') : (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X {macos}) AppleWebKit/{webkit} (KHTML, like Gecko) Version/{safari} Safari/{webkit}',
+    ),
+
+    ('macos', 'firefox') : (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X {macos}; rv:{firefox}) Gecko/20100101 Firefox/{firefox}',
+    ),
+
+    ('ios', 'chrome') : (
+        'Mozilla/5.0 (iPhone; CPU iPhone OS {ios} like Mac OS X) AppleWebKit/{webkit} (KHTML, like Gecko) CriOS/{chrome} Mobile/15E148 Safari/{webkit}',
+    ),
+
+    ('ios', 'edge') : (
+        'Mozilla/5.0 (iPhone; CPU iPhone OS {ios} like Mac OS X) AppleWebKit/{webkit} (KHTML, like Gecko) Version/15.0 EdgiOS/{chrome} Mobile/15E148 Safari/{webkit}',
+    ),
+
+    ('ios', 'safari') : (
+        'Mozilla/5.0 (iPhone; CPU iPhone OS {ios} like Mac OS X) AppleWebKit/{webkit} (KHTML, like Gecko) Version/{safari} Mobile/15E148 Safari/{webkit}'
+    ),
+
+    ('ios', 'firefox') : (
+        'Mozilla/5.0 (iPhone; CPU iPhone OS {ios} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/{firefox} Mobile/15E148 Safari/605.1.15'
+    ),
+
+}

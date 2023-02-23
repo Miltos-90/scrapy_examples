@@ -2,6 +2,12 @@ from random import randint, choice
 import software_data as data
 import string
 
+""" TODO
+Make software object which contains name/version/details fields.
+Have the software generators return a software
+
+"""
+
 
 class SoftwareGenerator():
     """ Generic software generator. It provides random software versions
@@ -49,6 +55,7 @@ class SoftwareGenerator():
 
 
 class AndroidOSGenerator(SoftwareGenerator):
+    """ Generic Android OS generator. """
 
     def __init__(self, systems: dict):
         
@@ -57,39 +64,48 @@ class AndroidOSGenerator(SoftwareGenerator):
 
         return
 
-    def __call__(self, brand: str = None):
+    def __call__(self, brand: str = None) -> dict:
+        """ Generate a random Android OS """
 
-        brand = choice(self.names)
-        os    = super(AndroidOSGenerator, self).__call__(brand)
+        # Randomly select a brand of mobile phones operating on Android and make OS
+        if brand is None: brand = choice(self.names)
+        os = super(AndroidOSGenerator, self).__call__(brand)
 
         # Make Android-specific details
-        os['build_number'] = self._buildNumber(brand, os['build_number'])
+        os['build_number'] = self._buildNumber(os['build_number'])
         os['device_name']  = choice(self.devices[brand])
 
         return os
     
+
     @staticmethod
-    def _buildNumber(brand, buildStr): 
+    def _buildNumber(buildNumbers : tuple) -> str:
+        """ Formats the buildnumber according to the mmanufacturer. 
+            Supports nexus, samsung and pixel devices.
+        """
 
-        bNo = choice(buildStr)
+        buildNum   = choice(buildNumbers) # Choose a build number at random
+        formatters = AndroidOSGenerator._makeFormatters()
 
-        if brand == 'nexus' or brand == 'samsung':
-            bNo = bNo.replace(
-                '{s}', 
-                '{}'.format(choice(string.ascii_uppercase)))
+        for f in formatters: 
+            buildNum = buildNum.replace(f['from'], f['to'])
 
-        bNo = bNo.\
-            replace(
-                '{d}',
-                '{:02d}{:02d}{:02d}'.format(randint(17, 22), randint(0, 12), randint(0, 29))).\
-            replace(
-                '{v}', 
-                '{}'.format(randint(1, 255)))
+        return buildNum
 
-        return bNo
+
+    @staticmethod
+    def _makeFormatters() -> tuple:
+        """ Generates appropriate formatters for the build number of an Android device. """
+
+        return (
+            {'from': '{s}', 'to' : '{}'.format(choice(string.ascii_uppercase))},
+            {'from': '{d}', 'to' : '{:02d}{:02d}{:02d}'.format(randint(17, 22), randint(0, 12), randint(0, 29))},
+            {'from': '{v}', 'to' : '{}'.format(randint(1, 255))}
+        )
 
 
 class PlatformGenerator():
+    """ Generates a random OS and a browser. """
 
     def __init__(self,
         osVersions : dict = data.operating_systems,
@@ -103,24 +119,27 @@ class PlatformGenerator():
         self.os        = SoftwareGenerator(osVersions)
         self.browser   = SoftwareGenerator(brVersions)
         self.androidOs = AndroidOSGenerator(androidSys)
-            
+        
+        # List of OS and browsers available
         self.osNames = self.os.names + ['android']
         self.brNames = self.browser.names
         
 
     def __call__(self, osName:str = None, brName: str = None):
+        """ Either returns an an OS and a browser  with the given 
+            names or chooses both at random
+        """
 
-        if osName is None : osName = choice(self.osNames)
-        if brName is None : brName = choice(self.brNames)
+        if osName is None: osName = choice(self.osNames)
 
-        if osName != 'android':
-            os = {'name': osName, 'version': self.os(osName)}
-        else:
-            os = {'name': osName, 'version': self.androidOs()}
+        if osName != 'android' : os = {'name': osName, 'version': self.os(osName)}
+        else                   : os = {'name': osName, 'version': self.androidOs()}
 
+        if brName is None: brName = choice(self.brNames)
         browser = {'name': brName, 'version': self.browser(brName)}
 
         return Platform(os, browser)
+
 
 class Platform():
 
