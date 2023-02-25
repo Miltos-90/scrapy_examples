@@ -218,525 +218,466 @@ REGEXES = {
     ], 
 
     'device': [
-        },{
-            'regex' : [r'\b(sch-i[89]0\d|shw-m380s|sm-[pt]\w{2,4}|gt-[pn]\d{2,4}|sgh-t8[56]9|nexus 10)'] # Samsung devices 
-        ['model', ['vendor', 'Samsung'], ['type', 'tablet']], 
+        {
+            'regex' : [r'\b(sch-i[89]0\d|shw-m380s|sm-[pt]\w{2,4}|gt-[pn]\d{2,4}|sgh-t8[56]9|nexus 10)'],   # Samsung devices 
+            'props' : ['model', ['vendor', 'Samsung'], ['type', 'tablet']], 
         },{
             'regex' : [
-            r'\b((?:s[cgp]h|gt|sm)-\w+|galaxy nexus)',
-            r'samsung[- ]([-\w]+)',
-            r'sec-(sgh\w+)'
+                r'\b((?:s[cgp]h|gt|sm)-\w+|galaxy nexus)',
+                r'samsung[- ]([-\w]+)',
+                r'sec-(sgh\w+)'
+                ], 
+            'props' : ['model', ['vendor', 'Samsung'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\((ip(?:hone|od)[\w ]*);'],                                    # iPod/iPhone
+            'props' : ['model', ['vendor', 'Apple'], ['type', 'mobile']],
+        },{
+            'regex' : [
+                r'\((ipad);[-\w\),; ]+apple',                                           # iPad
+                r'applecoremedia\/[\w\.]+ \((ipad)',
+                r'\b(ipad)\d\d?,\d\d?[;\]].+ios'
+                ], 
+            'props' : ['model', ['vendor', 'Apple'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b((?:ag[rs][23]?|bah2?|sht?|btv)-a?[lw]\d{2})\b(?!.+d\/s)'],  # Huawei
+            'props' : ['model', ['vendor', 'Huawei'], ['type', 'tablet']], 
+        },{
+            'regex' : [
+                r'(?:huawei|honor)([-\w ]+)[;\)]',
+                r'\b(nexus 6p|\w{2,4}-[atu]?[ln][01259x][012359][an]?)\b(?!.+d\/s)'
+                ], 
+            'props' : ['model', ['vendor', 'Huawei'], ['type', 'mobile']], 
+        },{
+            'regex' : [
+                r'\b(poco[\w ]+)(?: bui|\))',                                           # Xiaomi POCO
+                r'\b; (\w+) build\/hm\1',                                               # Xiaomi Hongmi 'numeric' models
+                r'\b(hm[-_ ]?note?[_ ]?(?:\d\w)?) bui',                                 # Xiaomi Hongmi
+                r'\b(redmi[\-_ ]?(?:note|k)?[\w_ ]+)(?: bui|\))',                       # Xiaomi Redmi
+                r'\b(mi[-_ ]?(?:a\d|one|one[_ ]plus|note lte|max)?[_ ]?(?:\d?\w?)[_ ]?(?:plus|se|lite)?)(?: bui|\))'  # Xiaomi Mi
+                ], 
+            'props' : [['model', '_', ' '], ['vendor', 'Xiaomi'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(mi[-_ ]?(?:pad)(?:[\w_ ]+))(?: bui|\))'],                   # Mi Pad tablets
+            'props' : [['model', '_', ' '], ['vendor', 'Xiaomi'], ['type', 'tablet']], 
+        },{
+            'regex' : [
+                r'; (\w+) bui.+ oppo',                                                  # OPPO
+                r'\b(cph[12]\d{3}|p(?:af|c[al]|d\w|e[ar])[mt]\d0|x9007|a101op)\b'
+                ], 
+            'props' : ['model', ['vendor', 'OPPO'], ['type', 'mobile']], 
+        },{
+            'regex' : [
+                r'vivo (\w+)(?: bui|\))',                                               # Vivo
+                r'\b(v[12]\d{3}\w?[at])(?: bui|;)'
+                ], 
+            'props' : ['model', ['vendor', 'Vivo'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(rmx[12]\d{3})(?: bui|;|\))'],                               # Realme
+            'props' : ['model', ['vendor', 'Realme'], ['type', 'mobile']], 
+        },{
+            'regex' : [                                                                 # Motorola
+                r'\b(milestone|droid(?:[2-4x]| (?:bionic|x2|pro|razr))?:?( 4g)?)\b[\w ]+build\/',
+                r'\bmot(?:orola)?[- ](\w*)',
+                r'((?:moto[\w\(\) ]+|xt\d{3,4}|nexus 6)(?= bui|\)))'
+                ], 
+            'props' : ['model', ['vendor', 'Motorola'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(mz60\d|xoom[2 ]{0,2}) build\/'], 
+            'props' : ['model', ['vendor', 'Motorola'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'((?=lg)?[vl]k\-?\d{3}) bui| 3\.[-\w; ]{10}lg?-([06cv9]{3,4})'], # 'LG'
+            'props' : ['model', ['vendor', 'LG'], ['type', 'tablet']], 
+        },{
+            'regex' : [
+                r'(lm(?:-?f100[nv]?|-[\w\.]+)(?= bui|\))|nexus [45])',
+                r'\blg[-e;\/ ]+((?!browser|netcast|android tv)\w+)',
+                r'\blg-?([\d\w]+) bui'], 
+            'props' : ['model', ['vendor', 'LG'], ['type', 'mobile']], 
+        },{
+            'regex' : [
+                r'(ideatab[-\w ]+)',                                                    # Lenovo
+                r'lenovo ?(s[56]000[-\w]+|tab(?:[\w ]+)|yt[-\d\w]{6}|tb[-\d\w]{6})'
+                ], 
+            'props' : ['model', ['vendor', 'Lenovo'], ['type', 'tablet']], 
+        },{
+            'regex' : [
+                r'(?:maemo|nokia).*(n900|lumia \d+)',                                   # Nokia
+                r'nokia[-_ ]?([-\w\.]*)'
+                ], 
+            'props' : [['model', '_', ' '], ['vendor', 'Nokia'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'(pixel c)\b'],                                                 # Google Pixel C
+            'props' : ['model', ['vendor', 'Google'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'droid.+; (pixel[\daxl ]{0,6})(?: bui|\))'],                    # Google Pixel
+            'props' : ['model', ['vendor', 'Google'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'droid.+ ([c-g]\d{4}|so[-gl]\w+|xq-a\w[4-7][12])(?= bui|\).+chrome\/(?![1-6]{0,1}\d\.))'], # Sony
+            'props' : ['model', ['vendor', 'Sony'], ['type', 'mobile']], 
+        },{
+            'regex' : [
+                r'sony tablet [ps]',
+                r'\b(?:sony)?sgp\w+(?: bui|\))'
+                ], 
+            'props' : [['model', 'Xperia Tablet'], ['vendor', 'Sony'], ['type', 'tablet']], 
+        },{
+            'regex' : [
+                r' (kb2005|in20[12]5|be20[12][59])\b',                                  # OnePlus
+                r'(?:one)?(?:plus)? (a\d0\d\d)(?: b|\))'
             ], 
-            ['model', ['vendor', 'Samsung'], ['type', 'mobile']], 
-        },{
-            'regex' : [r'\((ip(?:hone|od)[\w ]*);'],  # iPod/iPhone
-        ['model', ['vendor', 'Apple'], ['type', 'mobile']], 
+            'props' : ['model', ['vendor', 'OnePlus'], ['type', 'mobile']], 
         },{
             'regex' : [
-            r'\((ipad);[-\w\),; ]+apple',  # iPad
-            r'applecoremedia\/[\w\.]+ \((ipad)',
-            r'\b(ipad)\d\d?,\d\d?[;\]].+ios'
-        ], 
-        ['model', ['vendor', 'Apple'], ['type', 'tablet']], 
+                r'(alexa)webm',                                                         # Amazon
+                r'(kf[a-z]{2}wi)( bui|\))',                                             # Kindle Fire without Silk
+                r'(kf[a-z]+)( bui|\)).+silk\/'                                          # Kindle Fire HD
+                ], 
+            'props' : ['model', ['vendor', 'Amazon'], ['type', 'tablet']], 
         },{
-            'regex' : [r'\b((?:ag[rs][23]?|bah2?|sht?|btv)-a?[lw]\d{2})\b(?!.+d\/s)'], # Huawei
-        ['model', ['vendor', 'Huawei'], ['type', 'tablet']], 
+            'regex' : [r'((?:sd|kf)[0349hijorstuw]+)( bui|\)).+silk\/'],                # Fire Phone
+            'props' : [['model', '(.+)', 'Fire Phone $1'], ['vendor', 'Amazon'], ['type', 'mobile']], 
         },{
-            'regex' : [
-        r'(?:huawei|honor)([-\w ]+)[;\)]',
-        r'\b(nexus 6p|\w{2,4}-[atu]?[ln][01259x][012359][an]?)\b(?!.+d\/s)'], 
-        ['model', ['vendor', 'Huawei'], ['type', 'mobile']], 
-        },{
-            'regex' : [# Xiaomi
-            r'\b(poco[\w ]+)(?: bui|\))',  # Xiaomi POCO
-            r'\b; (\w+) build\/hm\1',  # Xiaomi Hongmi 'numeric' models
-            r'\b(hm[-_ ]?note?[_ ]?(?:\d\w)?) bui',  # Xiaomi Hongmi
-            r'\b(redmi[\-_ ]?(?:note|k)?[\w_ ]+)(?: bui|\))',  # Xiaomi Redmi
-            r'\b(mi[-_ ]?(?:a\d|one|one[_ ]plus|note lte|max)?[_ ]?(?:\d?\w?)[_ ]?(?:plus|se|lite)?)(?: bui|\))'  # Xiaomi Mi
-        ], 
-        [['model', '_', ' '], ['vendor', 'Xiaomi'], ['type', 'mobile']], 
-        },{
-            'regex' : [r'\b(mi[-_ ]?(?:pad)(?:[\w_ ]+))(?: bui|\))'],  # Mi Pad tablets
-        [['model', '_', ' '], ['vendor', 'Xiaomi'], ['type', 'tablet']], 
-        },{
-            'regex' : [# OPPO
-            r'; (\w+) bui.+ oppo',
-            r'\b(cph[12]\d{3}|p(?:af|c[al]|d\w|e[ar])[mt]\d0|x9007|a101op)\b'
-        ], 
-        ['model', ['vendor', 'OPPO'], ['type', 'mobile']], 
+            'regex' : [r'(playbook);[-\w\),; ]+(rim)'],                                 # BlackBerry PlayBook
+            'props' : ['model', 'vendor', ['type', 'tablet']],
         },{
             'regex' : [
-
-            # Vivo
-            r'vivo (\w+)(?: bui|\))',
-            r'\b(v[12]\d{3}\w?[at])(?: bui|;)'
-        ], ['model', ['vendor', 'Vivo'], ['type', 'mobile']], 
+                r'\b((?:bb[a-f]|st[hv])100-\d)',
+                r'\(bb10; (\w+)'                                                        # BlackBerry 10
+                ], 
+            'props' : ['model', ['vendor', 'BlackBerry'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'(?:\b|asus_)(transfo[prime ]{4,10} \w+|eeepc|slider \w+|nexus 7|padfone|p00[cj])'], # Asus
+            'props' : ['model', ['vendor', 'ASUS'], ['type', 'tablet']], 
+        },{
+            'regex' : [r' (z[bes]6[027][012][km][ls]|zenfone \d\w?)\b'], 
+            'props' : ['model', ['vendor', 'ASUS'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'(nexus 9)'],                                                   # HTC Nexus 9
+            'props' : ['model', ['vendor', 'HTC'], ['type', 'tablet']], 
         },{
             'regex' : [
-
-            # Realme
-            r'\b(rmx[12]\d{3})(?: bui|;|\))'
-        ], ['model', ['vendor', 'Realme'], ['type', 'mobile']], 
+                r'(htc)[-;_ ]{1,2}([\w ]+(?=\)| bui)|\w+)',                             # HTC
+                r'(zte)[- ]([\w ]+?)(?: bui|\/|\))',                                    # ZTE
+                r'(alcatel|geeksphone|nexian|panasonic|sony)[-_ ]?([-\w]*)'             # Alcatel/GeeksPhone/Nexian/Panasonic/Sony
+                ], 
+            'props' : ['vendor', ['model', '_', ' '], ['type', 'mobile']], 
+        },{
+            'regex' : [r'droid.+; ([ab][1-7]-?[0178a]\d\d?)'],                          # Acer
+            'props' : ['model', ['vendor', 'Acer'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'droid.+; (m[1-5] note) bui', r'\bmz-([-\w]{2,})'],             # Meizu
+            'props' : ['model', ['vendor', 'Meizu'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(sh-?[altvz]?\d\d[a-ekm]?)'],                                # Sharp
+            'props' : ['model', ['vendor', 'Sharp'], ['type', 'mobile']], 
         },{
             'regex' : [
-
-            # Motorola
-            r'\b(milestone|droid(?:[2-4x]| (?:bionic|x2|pro|razr))?:?( 4g)?)\b[\w ]+build\/',
-            r'\bmot(?:orola)?[- ](\w*)',
-            r'((?:moto[\w\(\) ]+|xt\d{3,4}|nexus 6)(?= bui|\)))'
-        ], ['model', ['vendor', 'Motorola'], ['type', 'mobile']], 
+                r'(blackberry|benq|palm(?=\-)|sonyericsson|acer|asus|dell|meizu|motorola|polytron)[-_ ]?([-\w]*)',  # BlackBerry/BenQ/Palm/Sony-Ericsson/Acer/Asus/Dell/Meizu/Motorola/Polytron
+                r'(hp) ([\w ]+\w)',                                                     # HP iPAQ
+                r'(asus)-?(\w+)',                                                       # Asus
+                r'(microsoft); (lumia[\w ]+)',                                          # Microsoft Lumia
+                r'(lenovo)[-_ ]?([-\w]+)',                                              # Lenovo
+                r'(jolla)',                                                             # Jolla
+                r'(oppo) ?([\w ]+) bui'                                                 # OPPO
+                ], 
+            'props' : ['vendor', 'model', ['type', 'mobile']], 
         },{
             'regex' : [
-            r'\b(mz60\d|xoom[2 ]{0,2}) build\/'
-        ], ['model', ['vendor', 'Motorola'], ['type', 'tablet']], 
+                r'(archos) (gamepad2?)',                                                # Archos
+                r'(hp).+(touchpad(?!.+tablet)|tablet)',                                 # HP TouchPad
+                r'(kindle)\/([\w\.]+)',                                                 # Kindle
+                r'(nook)[\w ]+build\/(\w+)',                                            # Nook
+                r'(dell) (strea[kpr\d ]*[\dko])',                                       # Dell Streak
+                r'(le[- ]+pan)[- ]+(\w{1,9}) bui',                                      # Le Pan Tablets
+                r'(trinity)[- ]*(t\d{3}) bui',                                          # Trinity Tablets
+                r'(gigaset)[- ]+(q\w{1,9}) bui',                                        # Gigaset Tablets
+                r'(vodafone) ([\w ]+)(?:\)| bui)'                                       # Vodafone
+                ], 
+            'props' : ['vendor', 'model', ['type', 'tablet']], 
+        },{
+            'regex' : [r'(surface duo)'],                                               # Surface Duo
+            'props' : ['model', ['vendor', 'Microsoft'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'droid [\d\.]+; (fp\du?)(?: b|\))'],                            # Fairphone
+            'props' : ['model', ['vendor', 'Fairphone'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'(u304aa)'],                                                    # AT&T
+            'props' : ['model', ['vendor', 'AT&T'], ['type', 'mobile']],  
+        },{
+            'regex' : [r'\bsie-(\w*)'],                                                 # Siemens
+            'props' : ['model', ['vendor', 'Siemens'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(rct\w+) b'],                                                # RCA Tablets
+            'props' : ['model', ['vendor', 'RCA'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(venue[\d ]{2,7}) b'],                                       # Dell Venue Tablets
+            'props' : ['model', ['vendor', 'Dell'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(q(?:mv|ta)\w+) b'],                                         # Verizon Tablet
+            'props' : ['model', ['vendor', 'Verizon'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(?:barnes[& ]+noble |bn[rt])([\w\+ ]*) b'],                  # Barnes & Noble Tablet
+            'props' : ['model', ['vendor', 'Barnes & Noble'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(tm\d{3}\w+) b'],
+            'props' : ['model', ['vendor', 'NuVision'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(k88) b'],                                                   # ZTE K Series Tablet
+            'props' : ['model', ['vendor', 'ZTE'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(nx\d{3}j) b'],                                              # ZTE Nubia
+            'props' : ['model', ['vendor', 'ZTE'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(gen\d{3}) b.+49h'],                                         # Swiss GEN Mobile
+            'props' : ['model', ['vendor', 'Swiss'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(zur\d{3}) b'],                                              # Swiss ZUR Tablet
+            'props' : ['model', ['vendor', 'Swiss'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b((zeki)?tb.*\b) b'],                                         # Zeki Tablets
+            'props' : ['model', ['vendor', 'Zeki'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b([yr]\d{2}) b', r'\b(dragon[- ]+touch |dt)(\w{5}) b'],       # Dragon Touch Tablet
+            'props' : [['vendor', 'Dragon Touch'], 'model', ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(ns-?\w{0,9}) b'],                                           # Insignia Tablets
+            'props' : ['model', ['vendor', 'Insignia'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b((nxa|next)-?\w{0,9}) b'],                                   # NextBook Tablets
+            'props' : ['model', ['vendor', 'NextBook'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(xtreme\_)?(v(1[045]|2[015]|[3469]0|7[05])) b'],             # Voice Xtreme Phones
+            'props' : [['vendor', 'Voice'], 'model', ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(lvtel\-)?(v1[12]) b'],                                      # LvTel Phones
+            'props' : [['vendor', 'LvTel'], 'model', ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(ph-1) '],                                                   # Essential PH-1
+            'props' : ['model', ['vendor', 'Essential'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'\b(v(100md|700na|7011|917g).*\b) b'],                          # Envizen Tablets
+            'props' : ['model', ['vendor', 'Envizen'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\b(trio[-\w\. ]+) b'],                                         # MachSpeed Tablets
+            'props' : ['model', ['vendor', 'MachSpeed'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'\btu_(1491) b'],                                               # Rotor Tablets
+            'props' : ['model', ['vendor', 'Rotor'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'(shield[\w ]+) b'],                                            # Nvidia Shield Tablets
+            'props' : ['model', ['vendor', 'Nvidia'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'(sprint) (\w+)'],                                              # Sprint Phones
+            'props' : ['vendor', 'model', ['type', 'mobile']], 
+        },{
+            'regex' : [r'(kin\.[onetw]{3})'],                                           # Microsoft Kin
+            'props' : [['model', r'\.', ' '], ['vendor', 'Microsoft'], ['type', 'mobile']], 
+        },{
+            'regex' : [r'droid.+; (cc6666?|et5[16]|mc[239][23]x?|vc8[03]x?)\)'],        # Zebra
+            'props' : ['model', ['vendor', 'Zebra'], ['type', 'tablet']], 
+        },{
+            'regex' : [r'droid.+; (ec30|ps20|tc[2-8]\d[kx])\)'], 
+            'props' : ['model', ['vendor', 'Zebra'], ['type', 'mobile']], 
+        },{
+            'regex' : [                                                                 # Consoles
+                r'(ouya)',                                                              # Ouya
+                r'(nintendo) ([wids3utch]+)'                                            # Nintendo
+                ], 
+            'props' : ['vendor', 'model', ['type', 'console']],  
+        },{
+            'regex' : [r'droid.+; (shield) bui'],                                       # Nvidia
+            'props' : ['model', ['vendor', 'Nvidia'], ['type', 'console']], 
+        },{
+            'regex' : [r'(playstation [345portablevi]+)'],                              # Playstation
+            'props' : ['model', ['vendor', 'Sony'], ['type', 'console']],  
+        },{
+            'regex' : [r'\b(xbox(?: one)?(?!; xbox))[\); ]'],                           # Microsoft Xbox
+            'props' : ['model', ['vendor', 'Microsoft'], ['type', 'console']],  
+        },{
+            'regex' : [r'smart-tv.+(samsung)'],                                         # Samsung SmartTV
+            'props' : ['vendor', ['type', 'smarttv']], 
+        },{
+            'regex' : [r'hbbtv.+maple;(\d+)'],
+            'props' : [['model', '^', 'SmartTV'], ['vendor', 'Samsung'], ['type', 'smarttv']],  
+        },{
+            'regex' : [r'(nux; netcast.+smarttv|lg (netcast\.tv-201\d|android tv))'],   # 'LG' SmartTV
+            'props' : [['vendor', 'LG'], ['type', 'smarttv']],  
+        },{
+            'regex' : [r'(apple) ?tv'],                                                 # Apple TV
+            'props' : ['vendor', ['model', 'Apple' + ' TV'], ['type', 'smarttv']],  
+        },{
+            'regex' : [r'crkey'],                                                       # Google Chromecast
+            'props' : [['model', 'Chrome' + 'cast'], ['vendor', 'Google'], ['type', 'smarttv']],  
+        },{
+            'regex' : [r'droid.+aft(\w)( bui|\))'],                                     # Fire TV
+            'props' : ['model', ['vendor', 'Amazon'], ['type', 'smarttv']],  
+        },{
+            'regex' : [r'\(dtv[\);].+(aquos)'],                                         # Sharp
+            'props' : ['model', ['vendor', 'Sharp'], ['type', 'smarttv']],  
         },{
             'regex' : [
-            
-
-            # 'LG'
-            r'((?=lg)?[vl]k\-?\d{3}) bui| 3\.[-\w; ]{10}lg?-([06cv9]{3,4})'
-        ], ['model', ['vendor', 'LG'], ['type', 'tablet']], 
+                r'\b(roku)[\dx]*[\)\/]((?:dvp-)?[\d\.]*)',                              # Roku
+                r'hbbtv\/\d+\.\d+\.\d+ +\([\w ]*; *(\w[^;]*);([^;]*)'                   # HbbTV devices
+                ], 
+            'props' : [['vendor', trim], ['model', trim], ['type', 'smarttv']],  
         },{
-            'regex' : [
-            r'(lm(?:-?f100[nv]?|-[\w\.]+)(?= bui|\))|nexus [45])',
-            r'\blg[-e;\/ ]+((?!browser|netcast|android tv)\w+)',
-            r'\blg-?([\d\w]+) bui'
-        ], ['model', ['vendor', 'LG'], ['type', 'mobile']], 
+            'regex' : [r'\b(android tv|smart[- ]?tv|opera tv|tv; rv:)\b'],              # SmartTV from Unidentified Vendors
+            'props' : [['type', 'smarttv']],  
         },{
-            'regex' : [
-
-            # Lenovo
-            r'(ideatab[-\w ]+)',
-            r'lenovo ?(s[56]000[-\w]+|tab(?:[\w ]+)|yt[-\d\w]{6}|tb[-\d\w]{6})'
-        ], ['model', ['vendor', 'Lenovo'], ['type', 'tablet']], 
+            'regex' : [r'((pebble))app'],                                               # Pebble
+            'props' : ['vendor', 'model', ['type', 'wearable']], 
         },{
-            'regex' : [
-
-            # Nokia
-            r'(?:maemo|nokia).*(n900|lumia \d+)',
-            r'nokia[-_ ]?([-\w\.]*)'
-        ], [['model', '_', ' '], ['vendor', 'Nokia'], ['type', 'mobile']], 
+            'regex' : [r'droid.+; (glass) \d'],                                         # Google Glass
+            'props' : ['model', ['vendor', 'Google'], ['type', 'wearable']],  
         },{
-            'regex' : [
-
-            # Google
-            r'(pixel c)\b'  # Google Pixel C
-        ], ['model', ['vendor', 'Google'], ['type', 'tablet']], 
+            'regex' : [r'droid.+; (wt63?0{2,3})\)'],
+            'props' : ['model', ['vendor', 'Zebra'], ['type', 'wearable']],  
         },{
-            'regex' : [
-            r'droid.+; (pixel[\daxl ]{0,6})(?: bui|\))'  # Google Pixel
-        ], ['model', ['vendor', 'Google'], ['type', 'mobile']], 
+            'regex' : [r'(quest( 2)?)'],                                                # Oculus Quest
+            'props' : ['model', ['vendor', 'Facebook'], ['type', 'wearable']],  
         },{
-            'regex' : [
-
-            # Sony
-            r'droid.+ ([c-g]\d{4}|so[-gl]\w+|xq-a\w[4-7][12])(?= bui|\).+chrome\/(?![1-6]{0,1}\d\.))'
-        ], ['model', ['vendor', 'Sony'], ['type', 'mobile']], 
+            'regex' : [r'(tesla)(?: qtcarbrowser|\/[-\w\.]+)'],                         # Tesla
+            'props' : ['vendor', ['type', 'embedded']],  
         },{
-            'regex' : [
-            r'sony tablet [ps]',
-            r'\b(?:sony)?sgp\w+(?: bui|\))'
-        ], [['model', 'Xperia Tablet'], ['vendor', 'Sony'], ['type', 'tablet']], 
+            'regex' : [r'droid .+?; ([^;]+?)(?: bui|\) applew).+? mobile safari'],      # Android Phones from Unidentified Vendors
+            'props' : ['model', ['type', 'mobile']],  
         },{
-            'regex' : [
-
-            # OnePlus
-            r' (kb2005|in20[12]5|be20[12][59])\b',
-            r'(?:one)?(?:plus)? (a\d0\d\d)(?: b|\))'
-        ], ['model', ['vendor', 'OnePlus'], ['type', 'mobile']], 
+            'regex' : [r'droid .+?; ([^;]+?)(?: bui|\) applew).+?(?! mobile) safari'],  # Android Tablets from Unidentified Vendors
+            'props' : ['model', ['type', 'tablet']],  
         },{
-            'regex' : [
-
-            # Amazon
-            r'(alexa)webm',
-            r'(kf[a-z]{2}wi)( bui|\))',  # Kindle Fire without Silk
-            r'(kf[a-z]+)( bui|\)).+silk\/'  # Kindle Fire HD
-        ], ['model', ['vendor', 'Amazon'], ['type', 'tablet']], 
+            'regex' : [r'\b((tablet|tab)[;\/]|focus\/\d(?!.+mobile))'],                 # Unidentifiable Tablet
+            'props' : [['type', 'tablet']],  
         },{
-            'regex' : [
-            r'((?:sd|kf)[0349hijorstuw]+)( bui|\)).+silk\/'  # Fire Phone
-        ], [['model', '(.+)', 'Fire Phone $1'], ['vendor', 'Amazon'], ['type', 'mobile']], 
+            'regex' : [r'(phone|mobile(?:[;\/]| safari)|pda(?=.+windows ce))'],         # Unidentifiable Mobile
+            'props' : [['type', 'mobile']],  
         },{
-            'regex' : [
-
-            # BlackBerry
-            r'(playbook);[-\w\),; ]+(rim)'  # BlackBerry PlayBook
-        ], ['model', 'vendor', ['type', 'tablet']],
-        },{
-            'regex' : [
-            r'\b((?:bb[a-f]|st[hv])100-\d)',
-            r'\(bb10; (\w+)'  # BlackBerry 10
-        ], ['model', ['vendor', 'BlackBerry'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-
-            # Asus
-            r'(?:\b|asus_)(transfo[prime ]{4,10} \w+|eeepc|slider \w+|nexus 7|padfone|p00[cj])'
-        ], ['model', ['vendor', 'ASUS'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r' (z[bes]6[027][012][km][ls]|zenfone \d\w?)\b'
-        ], ['model', ['vendor', 'ASUS'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-
-            # HTC
-            r'(nexus 9)'  # HTC Nexus 9
-        ], ['model', ['vendor', 'HTC'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'(htc)[-;_ ]{1,2}([\w ]+(?=\)| bui)|\w+)',  # HTC
-
-            # ZTE
-            r'(zte)[- ]([\w ]+?)(?: bui|\/|\))',
-            r'(alcatel|geeksphone|nexian|panasonic|sony)[-_ ]?([-\w]*)'  # Alcatel/GeeksPhone/Nexian/Panasonic/Sony
-        ], ['vendor', ['model', '_', ' '], ['type', 'mobile']], 
-        },{
-            'regex' : [
-
-            # Acer
-            r'droid.+; ([ab][1-7]-?[0178a]\d\d?)'
-        ], ['model', ['vendor', 'Acer'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-
-            # Meizu
-            r'droid.+; (m[1-5] note) bui',
-            r'\bmz-([-\w]{2,})'
-        ], ['model', ['vendor', 'Meizu'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-
-            # Sharp
-            r'\b(sh-?[altvz]?\d\d[a-ekm]?)'
-        ], ['model', ['vendor', 'Sharp'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-
-            # Mixed
-            r'(blackberry|benq|palm(?=\-)|sonyericsson|acer|asus|dell|meizu|motorola|polytron)[-_ ]?([-\w]*)',  # BlackBerry/BenQ/Palm/Sony-Ericsson/Acer/Asus/Dell/Meizu/Motorola/Polytron
-            r'(hp) ([\w ]+\w)',  # HP iPAQ
-            r'(asus)-?(\w+)',  # Asus
-            r'(microsoft); (lumia[\w ]+)',  # Microsoft Lumia
-            r'(lenovo)[-_ ]?([-\w]+)',  # Lenovo
-            r'(jolla)',  # Jolla
-            r'(oppo) ?([\w ]+) bui'  # OPPO
-        ], ['vendor', 'model', ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'(archos) (gamepad2?)',  # Archos
-            r'(hp).+(touchpad(?!.+tablet)|tablet)',  # HP TouchPad
-            r'(kindle)\/([\w\.]+)',  # Kindle
-            r'(nook)[\w ]+build\/(\w+)',  # Nook
-            r'(dell) (strea[kpr\d ]*[\dko])',  # Dell Streak
-            r'(le[- ]+pan)[- ]+(\w{1,9}) bui',  # Le Pan Tablets
-            r'(trinity)[- ]*(t\d{3}) bui',  # Trinity Tablets
-            r'(gigaset)[- ]+(q\w{1,9}) bui',  # Gigaset Tablets
-            r'(vodafone) ([\w ]+)(?:\)| bui)'  # Vodafone
-        ], ['vendor', 'model', ['type', 'tablet']], 
-        },{
-            'regex' : [
-
-            r'(surface duo)'  # Surface Duo
-        ], ['model', ['vendor', 'Microsoft'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'droid [\d\.]+; (fp\du?)(?: b|\))'  # Fairphone
-        ], ['model', ['vendor', 'Fairphone'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'(u304aa)'  # AT&T
-        ], ['model', ['vendor', 'AT&T'], ['type', 'mobile']],  
-        },{
-            'regex' : [
-            r'\bsie-(\w*)'  # Siemens
-        ], ['model', ['vendor', 'Siemens'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'\b(rct\w+) b'  # RCA Tablets
-        ], ['model', ['vendor', 'RCA'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(venue[\d ]{2,7}) b'  # Dell Venue Tablets
-        ], ['model', ['vendor', 'Dell'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(q(?:mv|ta)\w+) b'  # Verizon Tablet
-        ], ['model', ['vendor', 'Verizon'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(?:barnes[& ]+noble |bn[rt])([\w\+ ]*) b'  # Barnes & Noble Tablet
-        ], ['model', ['vendor', 'Barnes & Noble'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(tm\d{3}\w+) b'
-        ], ['model', ['vendor', 'NuVision'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(k88) b'  # ZTE K Series Tablet
-        ], ['model', ['vendor', 'ZTE'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(nx\d{3}j) b'  # ZTE Nubia
-        ], ['model', ['vendor', 'ZTE'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'\b(gen\d{3}) b.+49h'  # Swiss GEN Mobile
-        ], ['model', ['vendor', 'Swiss'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'\b(zur\d{3}) b'  # Swiss ZUR Tablet
-        ], ['model', ['vendor', 'Swiss'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b((zeki)?tb.*\b) b'  # Zeki Tablets
-        ], ['model', ['vendor', 'Zeki'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b([yr]\d{2}) b',
-            r'\b(dragon[- ]+touch |dt)(\w{5}) b'  # Dragon Touch Tablet
-        ], [['vendor', 'Dragon Touch'], 'model', ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(ns-?\w{0,9}) b'  # Insignia Tablets
-        ], ['model', ['vendor', 'Insignia'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b((nxa|next)-?\w{0,9}) b'  # NextBook Tablets
-        ], ['model', ['vendor', 'NextBook'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(xtreme\_)?(v(1[045]|2[015]|[3469]0|7[05])) b'  # Voice Xtreme Phones
-        ], [['vendor', 'Voice'], 'model', ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'\b(lvtel\-)?(v1[12]) b'  # LvTel Phones
-        ], [['vendor', 'LvTel'], 'model', ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'\b(ph-1) '  # Essential PH-1
-        ], ['model', ['vendor', 'Essential'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'\b(v(100md|700na|7011|917g).*\b) b'  # Envizen Tablets
-        ], ['model', ['vendor', 'Envizen'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\b(trio[-\w\. ]+) b'  # MachSpeed Tablets
-        ], ['model', ['vendor', 'MachSpeed'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'\btu_(1491) b'  # Rotor Tablets
-        ], ['model', ['vendor', 'Rotor'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'(shield[\w ]+) b'  # Nvidia Shield Tablets
-        ], ['model', ['vendor', 'Nvidia'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'(sprint) (\w+)'  # Sprint Phones
-        ], ['vendor', 'model', ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'(kin\.[onetw]{3})'  # Microsoft Kin
-        ], [['model', r'\.', ' '], ['vendor', 'Microsoft'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-            r'droid.+; (cc6666?|et5[16]|mc[239][23]x?|vc8[03]x?)\)'  # Zebra
-        ], ['model', ['vendor', 'Zebra'], ['type', 'tablet']], 
-        },{
-            'regex' : [
-            r'droid.+; (ec30|ps20|tc[2-8]\d[kx])\)'
-        ], ['model', ['vendor', 'Zebra'], ['type', 'mobile']], 
-        },{
-            'regex' : [
-
-            # Consoles
-            r'(ouya)',  # Ouya
-            r'(nintendo) ([wids3utch]+)'  # Nintendo
-        ], ['vendor', 'model', ['type', 'console']],  
-        },{
-            'regex' : [
-            r'droid.+; (shield) bui'  # Nvidia
-        ], ['model', ['vendor', 'Nvidia'], ['type', 'console']], 
-        },{
-            'regex' : [
-            r'(playstation [345portablevi]+)'  # Playstation
-        ], ['model', ['vendor', 'Sony'], ['type', 'console']],  
-        },{
-            'regex' :[
-            r'\b(xbox(?: one)?(?!; xbox))[\); ]'  # Microsoft Xbox
-        ], ['model', ['vendor', 'Microsoft'], ['type', 'console']],  
-        },{
-            'regex' :[
-
-            # SmartTVs
-            r'smart-tv.+(samsung)'  # Samsung
-        ], ['vendor', ['type', 'smarttv']], [
-            r'hbbtv.+maple;(\d+)'
-        ], [['model', '^', 'SmartTV'], ['vendor', 'Samsung'], ['type', 'smarttv']],  
-        },{
-            'regex' :[
-            r'(nux; netcast.+smarttv|lg (netcast\.tv-201\d|android tv))'  # 'LG' SmartTV
-        ], [['vendor', 'LG'], ['type', 'smarttv']],  
-        },{
-            'regex' :[
-            r'(apple) ?tv'  # Apple TV
-        ], ['vendor', ['model', 'Apple' + ' TV'], ['type', 'smarttv']],  
-        },{
-            'regex' :[
-            r'crkey'  # Google Chromecast
-        ], [['model', 'Chrome' + 'cast'], ['vendor', 'Google'], ['type', 'smarttv']],  
-        },{
-            'regex' :[
-            r'droid.+aft(\w)( bui|\))'  # Fire TV
-        ], ['model', ['vendor', 'Amazon'], ['type', 'smarttv']],  
-        },{
-            'regex' :[
-            r'\(dtv[\);].+(aquos)'  # Sharp
-        ], ['model', ['vendor', 'Sharp'], ['type', 'smarttv']],  
-        },{
-            'regex' :[
-            r'\b(roku)[\dx]*[\)\/]((?:dvp-)?[\d\.]*)',  # Roku
-            r'hbbtv\/\d+\.\d+\.\d+ +\([\w ]*; *(\w[^;]*);([^;]*)'  # HbbTV devices
-        ], [['vendor', trim], ['model', trim], ['type', 'smarttv']],  
-        },{
-            'regex' :[
-            r'\b(android tv|smart[- ]?tv|opera tv|tv; rv:)\b'  # SmartTV from Unidentified Vendors
-        ], [['type', 'smarttv']],  
-        },{
-            'regex' :[
-
-            # Wearables
-            r'((pebble))app'  # Pebble
-        ], ['vendor', 'model', ['type', 'wearable']], 
-        },{
-            'regex' : [
-            r'droid.+; (glass) \d'  # Google Glass
-        ], ['model', ['vendor', 'Google'], ['type', 'wearable']],  
-        },{
-            'regex' :[
-            r'droid.+; (wt63?0{2,3})\)'
-        ], ['model', ['vendor', 'Zebra'], ['type', 'wearable']],  
-        },{
-            'regex' :[
-            r'(quest( 2)?)'  # Oculus Quest
-        ], ['model', ['vendor', 'Facebook'], ['type', 'wearable']],  
-        },{
-            'regex' :[
-
-            # Embedded
-            r'(tesla)(?: qtcarbrowser|\/[-\w\.]+)'  # Tesla
-        ], ['vendor', ['type', 'embedded']],  
-        },{
-            'regex' :[
-
-            # Mixed (Generic)
-            r'droid .+?; ([^;]+?)(?: bui|\) applew).+? mobile safari'  # Android Phones from Unidentified Vendors
-        ], ['model', ['type', 'mobile']],  
-        },{
-            'regex' :[
-            r'droid .+?; ([^;]+?)(?: bui|\) applew).+?(?! mobile) safari'  # Android Tablets from Unidentified Vendors
-        ], ['model', ['type', 'tablet']],  
-        },{
-            'regex' :[
-            r'\b((tablet|tab)[;\/]|focus\/\d(?!.+mobile))'  # Unidentifiable Tablet
-        ], [['type', 'tablet']],  
-        },{
-            'regex' :[
-            r'(phone|mobile(?:[;\/]| safari)|pda(?=.+windows ce))'  # Unidentifiable Mobile
-        ], [['type', 'mobile']],  
-        },{
-            'regex' :[
-            r'(android[-\w\. ]{0,9});.+buil'  # Generic Android Device
-        ], ['model', ['vendor', 'Generic']]
+            'regex': [r'(android[-\w\. ]{0,9});.+buil'],                                # Generic Android Device
+            'props': ['model', ['vendor', 'Generic']]
+        }
     ],
 
-    'engine': [[
-        r'windows.+ edge\/([\w\.]+)'  # EdgeHTML
-    ], ['version', ['name', 'Edge' + 'HTML']], [
-        r'webkit\/537\.36.+chrome\/(?!27)([\w\.]+)'  # Blink
-    ], ['version', ['name', 'Blink']], [
-        r'(presto)\/([\w\.]+)',  # Presto
-        r'(webkit|trident|netfront|netsurf|amaya|lynx|w3m|goanna)\/([\w\.]+)',  # WebKit/Trident/NetFront/NetSurf/Amaya/Lynx/w3m/Goanna
-        r'ekioh(flow)\/([\w\.]+)',  # Flow
-        r'(khtml|tasman|links)[\/ ]\(?([\w\.]+)',  # KHTML/Tasman/Links
-        r'(icab)[\/ ]([23]\.[\d\.]+)'  # iCab
-    ], ['name', 'version'], [
-        r'rv\:([\w\.]{1,9})\b.+(gecko)'  # Gecko
-    ], ['version', 'name']],
+    'engine': [
+        {
+            'regex' : [r'windows.+ edge\/([\w\.]+)'],                           # EdgeHTML
+            'props' : ['version', ['name', 'Edge' + 'HTML']], 
+        },{
+            'regex' : [r'webkit\/537\.36.+chrome\/(?!27)([\w\.]+)'],            # Blink
+            'props' : ['version', ['name', 'Blink']], 
+        },{
+            'regex' : [
+                r'(presto)\/([\w\.]+)',                                         # Presto
+                r'(webkit|trident|netfront|netsurf|amaya|lynx|w3m|goanna)\/([\w\.]+)',  # WebKit/Trident/NetFront/NetSurf/Amaya/Lynx/w3m/Goanna
+                r'ekioh(flow)\/([\w\.]+)',                                      # Flow
+                r'(khtml|tasman|links)[\/ ]\(?([\w\.]+)',                       # KHTML/Tasman/Links
+                r'(icab)[\/ ]([23]\.[\d\.]+)'                                   # iCab
+                ], 
+            'props' : ['name', 'version'], 
+        },{
+            'regex' : [r'rv\:([\w\.]{1,9})\b.+(gecko)'],                        # Gecko
+            'props' : ['version', 'name']
+        }
+    ],
 
-    'os': [[
-        # Windows
-        r'microsoft (windows) (vista|xp)'  # Windows (iTunes)
-    ], ['name', 'version'], [
-        r'(windows) nt 6\.2; (arm)',  # Windows RT
-        r'(windows (?:phone(?: os)?|mobile))[\/ ]?([\d\.\w ]*)',  # Windows Phone
-        r'(windows)[\/ ]?([ntce\d\. ]+\w)(?!.+xbox)'
-    ], ['name', ['version', str_mapper, WINDOWS_VERSION_MAP]], [
-        r'(win(?=3|9|n)|win 9x )([nt\d\.]+)'
-    ], [['name', 'Windows'], ['version', str_mapper, WINDOWS_VERSION_MAP]], [
-
-        # iOS/macOS
-        r'ip[honead]{2,4}\b(?:.*os ([\w]+) like mac|; opera)',  # iOS
-        r'cfnetwork\/.+darwin'
-    ], [['version', '_', '.'], ['name', 'iOS']], [
-        r'(mac os x) ?([\w\. ]*)',
-        r'(macintosh|mac_powerpc\b)(?!.+haiku)'  # Mac OS
-    ], [['name', 'Mac OS'], ['version', '_', '.']], [
-
-        # Mobile OSes
-        r'droid ([\w\.]+)\b.+(android[- ]x86)'  # Android-x86
-    ], ['version', 'name'], [
-        r'(android|webos|qnx|bada|rim tablet os|maemo|meego|sailfish)[-\/ ]?([\w\.]*)',  # Android/WebOS/QNX/Bada/RIM/Maemo/MeeGo/Sailfish OS
-        r'(blackberry)\w*\/([\w\.]*)',  # Blackberry
-        r'(tizen|kaios)[\/ ]([\w\.]+)',  # Tizen/KaiOS
-        r'\((series40);'  # Series 40
-    ], ['name', 'version'], [
-        r'\(bb(10);'  # BlackBerry 10
-    ], ['version', ['name', 'BlackBerry']], [
-        r'(?:symbian ?os|symbos|s60(?=;)|series60)[-\/ ]?([\w\.]*)'  # Symbian
-    ], ['version', ['name', 'Symbian']], [
-        r'mozilla\/[\d\.]+ \((?:mobile|tablet|tv|mobile; [\w ]+); rv:.+ gecko\/([\w\.]+)'  # Firefox OS
-    ], ['version', ['name', 'Firefox' + ' OS']], [
-        r'web0s;.+rt(tv)',
-        r'\b(?:hp)?wos(?:browser)?\/([\w\.]+)'  # WebOS
-    ], ['version', ['name', 'webOS']], [
-
-        # Google Chromecast
-        r'crkey\/([\d\.]+)'  # Google Chromecast
-    ], ['version', ['name', 'Chrome' + 'cast']], [
-        r'(cros) [\w]+ ([\w\.]+\w)'  # Chromium OS
-    ], [['name', 'Chromium OS'], 'version'], [
-
-        # Console
-        r'(nintendo|playstation) ([wids345portablevuch]+)',  # Nintendo/Playstation
-        r'(xbox); +xbox ([^\);]+)',  # Microsoft Xbox (360, One, X, S, Series X, Series S)
-
-        # Other
-        r'\b(joli|palm)\b ?(?:os)?\/?([\w\.]*)',  # Joli/Palm
-        r'(mint)[\/\(\) ]?(\w*)',  # Mint
-        r'(mageia|vectorlinux)[; ]',  # Mageia/VectorLinux
-        r'([kxln]?ubuntu|debian|suse|opensuse|gentoo|arch(?= linux)|slackware|fedora|mandriva|centos|pclinuxos|red ?hat|zenwalk|linpus|raspbian|plan 9|minix|risc os|contiki|deepin|manjaro|elementary os|sabayon|linspire)(?: gnu\/linux)?(?: enterprise)?(?:[- ]linux)?(?:-gnu)?[-\/ ]?(?!chrom|package)([-\w\.]*)',  # Ubuntu/Debian/SUSE/Gentoo/Arch/Slackware/Fedora/Mandriva/CentOS/PCLinuxOS/RedHat/Zenwalk/Linpus/Raspbian/Plan9/Minix/RISCOS/Contiki/Deepin/Manjaro/elementary/Sabayon/Linspire
-        r'(hurd|linux) ?([\w\.]*)',  # Hurd/Linux
-        r'(gnu) ?([\w\.]*)',  # GNU
-        r'\b([-frentopcghs]{0,5}bsd|dragonfly)[\/ ]?(?!amd|[ix346]{1,2}86)([\w\.]*)',  # FreeBSD/NetBSD/OpenBSD/PC-BSD/GhostBSD/DragonFly
-        r'(haiku) (\w+)'  # Haiku
-    ], ['name', 'version'], [
-        r'(sunos) ?([\w\.\d]*)'  # Solaris
-    ], [['name', 'Solaris'], 'version'], [
-        r'((?:open)?solaris)[-\/ ]?([\w\.]*)',  # Solaris
-        r'(aix) ((\d)(?=\.|\)| )[\w\.])*',  # AIX
-        r'\b(beos|os\/2|amigaos|morphos|openvms|fuchsia|hp-ux)',  # BeOS/OS2/AmigaOS/MorphOS/OpenVMS/Fuchsia/HP-UX
-        r'(unix) ?([\w\.]*)'  # UNIX
-    ], ['name', 'version']]
+    'os': [
+        {
+            'regex' : [r'microsoft (windows) (vista|xp)'],                      # Windows (iTunes)
+            'props' : ['name', 'version'],
+        },{
+            'regex' : [
+                r'(windows) nt 6\.2; (arm)',                                    # Windows RT
+                r'(windows (?:phone(?: os)?|mobile))[\/ ]?([\d\.\w ]*)',        # Windows Phone
+                r'(windows)[\/ ]?([ntce\d\. ]+\w)(?!.+xbox)'
+            ], 
+            'props' : ['name', ['version', str_mapper, WINDOWS_VERSION_MAP]], 
+        },{
+            'regex' : [r'(win(?=3|9|n)|win 9x )([nt\d\.]+)'], 
+            'props' : [['name', 'Windows'], ['version', str_mapper, WINDOWS_VERSION_MAP]],
+        },{
+            'regex' : [
+                r'ip[honead]{2,4}\b(?:.*os ([\w]+) like mac|; opera)',          # iOS
+                r'cfnetwork\/.+darwin'
+            ], 
+            'props' : [['version', '_', '.'], ['name', 'iOS']], 
+        },{
+            'regex' : [
+                r'(mac os x) ?([\w\. ]*)',
+                r'(macintosh|mac_powerpc\b)(?!.+haiku)'                         # Mac OS
+            ], 
+            'props' : [['name', 'Mac OS'], ['version', '_', '.']],
+        },{ 
+            'regex' : [r'droid ([\w\.]+)\b.+(android[- ]x86)'],                 # Android-x86
+            'props' : ['version', 'name'], 
+        },{
+            'regex' : [
+                r'(android|webos|qnx|bada|rim tablet os|maemo|meego|sailfish)[-\/ ]?([\w\.]*)',  # Android/WebOS/QNX/Bada/RIM/Maemo/MeeGo/Sailfish OS
+                r'(blackberry)\w*\/([\w\.]*)',                                  # Blackberry
+                r'(tizen|kaios)[\/ ]([\w\.]+)',                                 # Tizen/KaiOS
+                r'\((series40);'                                                # Series 40
+            ], 
+            'props' : ['name', 'version'], 
+        },{
+            'regex' : [r'\(bb(10);'],                                           # BlackBerry 10
+            'props' : ['version', ['name', 'BlackBerry']], 
+        },{
+            'regex' : [r'(?:symbian ?os|symbos|s60(?=;)|series60)[-\/ ]?([\w\.]*)'],  # Symbian
+            'props' : ['version', ['name', 'Symbian']], 
+        },{
+            'regex' : [r'mozilla\/[\d\.]+ \((?:mobile|tablet|tv|mobile; [\w ]+); rv:.+ gecko\/([\w\.]+)'],  # Firefox OS
+            'props' : ['version', ['name', 'Firefox' + ' OS']], 
+        },{
+            'regex' : [
+                r'web0s;.+rt(tv)',
+                r'\b(?:hp)?wos(?:browser)?\/([\w\.]+)'                          # WebOS
+            ], 
+            'props' : ['version', ['name', 'webOS']], 
+        },{
+            'regex' : [r'crkey\/([\d\.]+)'],                                    # Google Chromecast
+            'props' : ['version', ['name', 'Chrome' + 'cast']], 
+        },{
+            'regex' : [r'(cros) [\w]+ ([\w\.]+\w)'],                            # Chromium OS
+            'props' : [['name', 'Chromium OS'], 'version'], 
+        },{
+            'regex' : [
+                r'(nintendo|playstation) ([wids345portablevuch]+)',             # Nintendo/Playstation
+                r'(xbox); +xbox ([^\);]+)',                                     # Microsoft Xbox (360, One, X, S, Series X, Series S)
+                r'\b(joli|palm)\b ?(?:os)?\/?([\w\.]*)',                        # Joli/Palm
+                r'(mint)[\/\(\) ]?(\w*)',                                       # Mint
+                r'(mageia|vectorlinux)[; ]',                                    # Mageia/VectorLinux
+                r'([kxln]?ubuntu|debian|suse|opensuse|gentoo|arch(?= linux)|slackware|fedora|mandriva|centos|pclinuxos|red ?hat|zenwalk|linpus|raspbian|plan 9|minix|risc os|contiki|deepin|manjaro|elementary os|sabayon|linspire)(?: gnu\/linux)?(?: enterprise)?(?:[- ]linux)?(?:-gnu)?[-\/ ]?(?!chrom|package)([-\w\.]*)',  # Ubuntu/Debian/SUSE/Gentoo/Arch/Slackware/Fedora/Mandriva/CentOS/PCLinuxOS/RedHat/Zenwalk/Linpus/Raspbian/Plan9/Minix/RISCOS/Contiki/Deepin/Manjaro/elementary/Sabayon/Linspire
+                r'(hurd|linux) ?([\w\.]*)',                                     # Hurd/Linux
+                r'(gnu) ?([\w\.]*)',                                            # GNU
+                r'\b([-frentopcghs]{0,5}bsd|dragonfly)[\/ ]?(?!amd|[ix346]{1,2}86)([\w\.]*)',  # FreeBSD/NetBSD/OpenBSD/PC-BSD/GhostBSD/DragonFly
+                r'(haiku) (\w+)'                                                # Haiku
+            ], 
+            'props' : ['name', 'version'], 
+        },{
+            'regex' : [r'(sunos) ?([\w\.\d]*)'],                                # Solaris
+            'props' : [['name', 'Solaris'], 'version'], 
+        },{
+            'regex' : [
+                r'((?:open)?solaris)[-\/ ]?([\w\.]*)',                          # Solaris
+                r'(aix) ((\d)(?=\.|\)| )[\w\.])*',                              # AIX
+                r'\b(beos|os\/2|amigaos|morphos|openvms|fuchsia|hp-ux)',        # BeOS/OS2/AmigaOS/MorphOS/OpenVMS/Fuchsia/HP-UX
+                r'(unix) ?([\w\.]*)'                                            # UNIX
+            ], 
+            'props' : ['name', 'version']
+        }
+    ]
 }
 
+# Compile all regexes
+for _list in REGEXES.values():
+    for _dict in _list:
+        _dict['regex'] = [re.compile(r, re.IGNORECASE) for r in _dict['regex']]
+
+
+"""
 # compile regexes
 for regexes in REGEXES.values():
+    
     for idx in range(0, len(regexes), 2):
         regexes[idx] = [re.compile(r, re.IGNORECASE) for r in regexes[idx]]
-
+"""
 
 
 def rgx_mapper(ua, arrays):
@@ -747,8 +688,8 @@ def rgx_mapper(ua, arrays):
     matches = False
     # loop through all regexes maps
     while i < len(arrays) and not matches:
-        regex = arrays[i]  # even sequence (0,2,4,..)
-        props = arrays[i + 1]  # odd sequence (1,3,5,..)
+        regex = arrays[i]['regex']  # even sequence (0,2,4,..)
+        props = arrays[i]['props']  # odd sequence (1,3,5,..)
         j = k = 0
 
         # try matching uastring with regexes
@@ -785,7 +726,7 @@ def rgx_mapper(ua, arrays):
                             yield q[0], q[3](re.sub(q[1], q[2].replace('$', '\\'), match)) if match else None
                     else:
                         yield q, match if match else None
-        i += 2
+        i += 1
 
 
 
