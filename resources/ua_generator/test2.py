@@ -6,7 +6,7 @@ import re
 from parser_utils import str_mapper, lowerize, trim
 from parser_utils import EMPTY
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Union
 
 from test import test
 
@@ -37,116 +37,72 @@ WINDOWS_VERSION_MAP = {
     'RT': 'ARM'
 }
 
+""" --------------------------- Modifications: Iteration 2 --------------------------- """
 
-
-
-
-@dataclass
-class Mapper(object):
-    """ Regex mapper. 
-        Maps a property <key> of a Regex object to a value <value>
+def Mapper(key, value = None):
+    """ Mapping function factory. It returns a function to process a substring returned as the
+        result of re.group function.
+        The returned function modifies <m> (= a regex match object) according to the type of the 
+        specified <value>. In particular: 
+            * If value is None, it returns the corresponding match,
+            * if the value is a string, the match is ignored, and the value itself is returned,
+            * if the value is a callable (function) it is being applied to the match, and the
+              result of that operation is returned.
     """
 
-    key   : str      = None
-    value : str      = None
-    func  : Callable = None
-    re    : str      = None
-
+    if value is None:                  return lambda m: (key, m)
+    elif isinstance(value, str):       return lambda m: (key, value)
+    elif isinstance(value, Callable):  return lambda m: (key, value(m) if m else None)
 
 @dataclass
 class Regex():
+    """ Regex object. It holds a regex and an iterable of mapper objects for 
+        the substrings matched by the regex.
+    """
     expr    : str   = None
     mappers : tuple = ()
 
 
-def RegexpMapper(mapper: Mapper, match) -> tuple:
-
-    if mapper.value is None and \
-           mapper.func is None and \
-           mapper.re is None:
-           # No properties are specified. Replace key with the match found
-           outValue = match
-
-    elif mapper.value is not None:
-            # Assign given value and ignore match
-            outValue = mapper.value
-            
-    elif mapper.func is not None:
-            # Assign value from specified function
-            outValue = mapper.func(match)
-
-    elif mapper.re is not None:
-            # Sanitize match using given regex
-            outValue = re.sub(mapper.re, mapper.value.replace('$', '\\'), match) if match else None
-            
-    return mapper.key, outValue
-
-        
-
-
-
 wtf = [
-    Regex(
-        expr = r'\b(?:crmo|crios)\/([\w\.]+)',
+    Regex( # Chrome for Android/iOS
+        expr    = r'\b(?:crmo|crios)\/([\w\.]+)',
         mappers = (
             Mapper(key = 'version'),
             Mapper(key = 'name', value = 'Chrome')
             )
         ),
-    Regex(
-        expr = r'(avast|avg)\/([\w\.]+)',
+    Regex( # Microsoft Edge
+        expr    = r'edg(?:e|ios|a)?\/([\w\.]+)',
         mappers = (
             Mapper(key = 'version'),
-            Mapper(
-                key   = 'name', 
-                value = '$1 Secure ' + 'Browser',
-                re = r'(.+)'
-                )
+            Mapper(key = 'name', value = 'Edge')
             )
-        )
+        ),
+        Regex( # Opera Mini
+        expr    = r'(opera mini)\/([-\w\.]+)',
+        mappers = (Mapper(key = 'version'),)
+        ),
+    
 ]
 
+""" Example with string sanitation
+Regex(
+        expr = r'(avast|avg)\/([\w\.]+)',
+        mappers = (
+            Mapper(
+                key   = 'name', 
+                value = lambda match: re.sub(r'(.+)', '\\1 Secure Browser', match)
+                ),
+            Mapper(key = 'version'),
+            )
+        )
+"""
+
+# Compile all regexes
 for entry in wtf:
     entry.expr = re.compile( entry.expr, re.IGNORECASE)
 
-ua = 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.82 Safari/537.36 Avast/99.0.15283.83'
-
-
-
-# loop through all regexes maps
-for entry in wtf:
-        
-    # try matching uastring with regexes
-    matches = entry.expr.search(ua)
-        
-    if matches: break
-    
-    if matches:
-        
-        for mapper in entry.mappers:
-            print(mapper.key, RegexpMapper(mapper, matches))
-
-
-#re.sub(q[1], q[2].replace('$', '\\'), match) if match else None
-
-"""
-'regex' : r'(avast|avg)\/([\w\.]+)',                              # Avast/AVG Secure Browser
-'props' : [['name', r'(.+)', '$1 Secure ' + 'Browser'], 'version'], 
-
-'regex' : r'webkit.+?(mobile ?safari|safari)(\/[\w\.]+)', 
-'props' : ['name', ['version', str_mapper, OLD_SAFARI_MAP]],        # Safari < 3.0 
-
-'regex' : r'((?:avr32|ia64(?=;))|68k(?=\))|\barm(?=v(?:[1-7]|[5-7]1)l?|;|eabi)|(?=atmel )avr|(?:irix|mips|sparc)(?:64)?\b|pa-risc)',  
-'props' : [['architecture', lowerize]]                              # IA64, 68K, ARM/64, AVR/32, IRIX/64, MIPS/64, SPARC/64, PA-RISC
-
-'regex' : r'hbbtv\/\d+\.\d+\.\d+ +\([\w ]*; *(\w[^;]*);([^;]*)',                   # HbbTV devices
-'props' : [['vendor', trim], ['model', trim], ['type', 'smarttv']], 
-
-'regex' : r'(win(?=3|9|n)|win 9x )([nt\d\.]+)', 
-'props' : [['name', 'Windows'], ['version', str_mapper, WINDOWS_VERSION_MAP]],
-"""
-
-
+""" --------------------------- Modifications: Iteration 1 --------------------------------"""
 REGEXES = {
     'browser': [
         {   
@@ -894,7 +850,6 @@ for list_ in REGEXES.values():
     for dict_ in list_:
         dict_['regex'] = re.compile( dict_['regex'], re.IGNORECASE) 
 
-
 def newrgx_mapper(ua, arrays):
 
 
@@ -925,6 +880,7 @@ def newrgx_mapper(ua, arrays):
                     
                     if callable(q[1]):
                         # assign modified match
+                        
                         yield q[0], q[1](match) # map property q[0] to q[1](match)
                     else:
                         # assign given value, ignore regex match
@@ -938,15 +894,13 @@ def newrgx_mapper(ua, arrays):
                         yield q[0], q[1](match, q[2]) if match else None
                     else:
                         # sanitize match using given regex
+                        #print('newregxp -> ', q[1], ',', q[2], ':', re.sub(q[1], q[2].replace('$', '\\'), match) if match else None)
                         yield q[0], re.sub(q[1], q[2].replace('$', '\\'), match) if match else None
                 elif len(q) == 4:
                     yield q[0], q[3](re.sub(q[1], q[2].replace('$', '\\'), match)) if match else None
             
             else:
                 yield q, match if match else None
-        
-
-
 
 
 if __name__ == '__main__':
@@ -1058,6 +1012,7 @@ if __name__ == '__main__':
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:39.0) Gecko/20100101 Firefox/39.0'
     ]
 
+    """ Testing original with modified """
     out = []
     ii = 0
     for ua in uaStrings:
@@ -1066,9 +1021,39 @@ if __name__ == '__main__':
         test_dict = test(ua)
 
         for key, value in newrgx_mapper(ua, arrays):
+            
             out.append(value == test_dict[key])
 
+    print(f'First mods. Comparison with original on {ii} strings. All found equal: {all(out)}', end = '\n\n')
+    
+    """ Testing modified with newly modfied (iteraiotn 2)"""
+    out = []
+    ii = 0
+    for ua in uaStrings:
+        ii += 1
 
+        test_dict = test(ua)
+
+        for key, value in newrgx_mapper(ua, arrays):
+            print('first modfied mapper result:', key, value)
+            out.append(value == test_dict[key])
+
+        # loop through all regexes maps
+        for entry in wtf:
+                
+            # try matching uastring with regexes
+            matches = entry.expr.search(ua)
+                
+            if matches: 
+                
+                for i, mapper in enumerate(entry.mappers):
+                    try               : match = matches.group(i + 1)
+                    except IndexError : match = None
+
+                    k, v = mapper(match)
+                    print('my mapper result:', k, v)
+
+        break
 
     print(ii, all(out))
             

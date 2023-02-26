@@ -789,6 +789,6 @@ if __name__ == '__main__':
     for ua in uaStrings:
 
 
-        _browser = test(ua, REGEXES['browser'])
+        _browser = test(ua)
 
         print(_browser)
