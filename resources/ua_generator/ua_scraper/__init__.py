@@ -1,0 +1,1 @@
+from ua_scraper.scraper import Scraper
