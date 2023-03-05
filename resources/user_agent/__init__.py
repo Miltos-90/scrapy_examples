@@ -1,1 +1,0 @@
-from .generator import UserAgentGenerator as Generator
