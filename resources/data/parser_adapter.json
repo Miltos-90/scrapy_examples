@@ -1,0 +1,11 @@
+{
+    "browser":
+    {
+        "chromium": "chrome",
+        "android browser": "chrome",
+        "mobile safari": "safari"
+    },
+    "os": {
+        "ubuntu": "linux"
+    }
+}
