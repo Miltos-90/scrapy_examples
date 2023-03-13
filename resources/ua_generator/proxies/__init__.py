@@ -1,0 +1,1 @@
+from .parser_to_extractor import Proxy as ParserExtractorProxy
