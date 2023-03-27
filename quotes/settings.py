@@ -68,8 +68,8 @@ RETRY_HTTP_CODES = [400, 500, 502, 503, 504, 522, 524, 408, 429]
 #}
 #USER_AGENT = 'quotes (+http://www.yourdomain.com)' # Crawl responsibly by identifying yourself (and your website) on the user-agent
 NUM_REQUESTS_FOR_HEADER_CHANGE = 10
-USER_AGENT_LIST = '../resources/request_headers/user_agent_database.txt'
-REFERER_LIST    = '../resources/request_headers/referer_database.txt'
+USER_AGENT_LIST = './user_agent_database.txt'
+REFERER_LIST    = './referer_database.txt'
 
 """ Extensions configuration """
 # Enable or disable extensions and related settings (See https://docs.scrapy.org/en/latest/topics/extensions.html)
