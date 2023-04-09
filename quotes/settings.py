@@ -18,7 +18,7 @@ ALLOWED_DOMAINS       = ['quotes.toscrape.com']
 START_URLS            = ['https://quotes.toscrape.com/page/1/'] 
 SPIDER_MODULES        = ['quotes.spiders']
 NEWSPIDER_MODULE      = 'quotes.spiders'
-ROBOTSTXT_OBEY        = False 
+ROBOTSTXT_OBEY        = True 
 
 """ Configure a delay for requests for the same website """
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -70,6 +70,7 @@ RETRY_TIMES      = 5
 RETRY_HTTP_CODES = [400, 500, 502, 503, 504, 522, 524, 408, 429]
 
 # Tor handler 
+TOR_ENABLED             = True
 TOR_CONTROL_PORT        = 9051
 TOR_PASSWORD            = 'miltos'
 PRIVOXY_PROXY_ADDRESS   = 'http://127.0.0.1:8118'

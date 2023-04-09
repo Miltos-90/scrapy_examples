@@ -85,6 +85,22 @@ class QuotesSpider(Spider):
         QuotesDatabase.cursor.execute(query, task)
         QuotesDatabase.close()
 
+        address = response.request.meta['IPaddress']
+        fingerprint = response.request.meta['fingerprint']
+        nickname =response.request.meta['nickname']
+        locale = response.request.meta['locale']
+
+        with open('./output.txt', mode = 'a', encoding = 'utf-8') as f:
+            f.write("\n")
+            f.write("====================================================\n")
+            f.write("  Exit relay for our connection to %s\n" % (response.url))
+            f.write("  address: %s\n" % address)
+            f.write("  fingerprint: %s\n" % fingerprint)
+            f.write("  nickname: %s\n" % nickname)
+            f.write("  locale: %s\n" % locale)
+            f.write("====================================================")
+            f.write("\n")
+
         return
 
 

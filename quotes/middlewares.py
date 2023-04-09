@@ -30,9 +30,11 @@ Use a Downloader middleware if you need to do one of the following:
 """ 
 
 import functools
+import requests
 from stem import Signal
 from stem.control import Controller
 from scrapy.downloadermiddlewares.httpproxy import HttpProxyMiddleware
+from scrapy.exceptions import NotConfigured
 from scrapy.downloadermiddlewares.defaultheaders import DefaultHeadersMiddleware
 from scrapy.utils.project import get_project_settings
 from stem import StreamStatus
@@ -44,62 +46,57 @@ from random_header_generator import HeaderGenerator
 SETTINGS = get_project_settings()
 
 
-class TorHandlerMiddleware(HttpProxyMiddleware):
+class TorHandlerMiddleware():
 
 
-    def __init__(self, *args) -> None:
+    def __init__(self, port, password) -> None:
         """Ininitialisation method """
-        
-        super().__init__(args)
-        
-        self.controller = Controller.from_port(port = SETTINGS['TOR_CONTROL_PORT'])
-        self.controller.authenticate(password = SETTINGS['TOR_PASSWORD'])
+                
+        self.controller = Controller.from_port(port = port)
+        self.controller.authenticate(password = password)
 
-        streamListener  = functools.partial(self.streamEvent, self.controller)
+        streamListener  = functools.partial(self._streamEvent, self.controller)
         self.controller.add_event_listener(streamListener, EventType.STREAM)
         
         self.IPsettleTime = 2 # Wait time for the new IP to "settle in"
-        self.renewConnection() # Force IP change when initialising
+        self.targetIP    = None
+        self.IPaddress   = None
+        self.fingerprint = None
+        self.nickname    = None
+        self.locale      = None
     
-        return 
+        return
+    
+    @classmethod
+    def from_crawler(cls, crawler):
+        if not crawler.settings.getbool("TOR_ENABLED"):
+            raise NotConfigured
+        
+        return cls(port     = crawler.settings.get("TOR_CONTROL_PORT"), 
+                   password = crawler.settings.get("TOR_PASSWORD"))
     
 
-    def streamEvent(self, controller, event):
+    def _streamEvent(self, controller, event):
         """ Extracts available information regarding the currently used exit node.
             Source: https://stem.torproject.org/tutorials/examples/exit_used.html
         """
 
-        if event.status == StreamStatus.SUCCEEDED and event.circ_id:
+        # Grab circuit
+        circ = controller.get_circuit(event.circ_id)
 
-            # Grab circuit
-            circ = controller.get_circuit(event.circ_id)
+        # Get exit node
+        exitFprint = circ.path[-1][0]
+        exit_relay  = controller.get_network_status(exitFprint)
 
-            # Get exit node
-            exitFprint = circ.path[-1][0]
-            exit_relay  = controller.get_network_status(exitFprint)
-
-            # Extract info
-            self.targetIP    = event.target
-            self.IPaddress   = f'{exit_relay.address}:{exit_relay.or_port}'
-            self.fingerprint =  exit_relay.fingerprint
-            self.nickname    = exit_relay.nickname
-            self.locale      = controller.get_info("ip-to-country/%s" % exit_relay.address, 'unknown')
-
-
-            with open('./output.txt', mode = 'a', encoding = 'utf-8') as f:
-                f.write("\n")
-                f.write("====================================================\n")
-                f.write("  Exit relay for our connection to %s\n" % (event.target))
-                f.write("  address: %s:%i\n" % (exit_relay.address, exit_relay.or_port))
-                f.write("  fingerprint: %s\n" % exit_relay.fingerprint)
-                f.write("  nickname: %s\n" % exit_relay.nickname)
-                f.write("  locale: %s\n" % controller.get_info("ip-to-country/%s" % exit_relay.address, 'unknown'))
-                f.write("====================================================")
-                f.write("\n")
-
-
-
-    def renewConnection(self):
+        # Extract info
+        self.targetIP    = event.target
+        self.IPaddress   = f'{exit_relay.address}:{exit_relay.or_port}'
+        self.fingerprint =  exit_relay.fingerprint
+        self.nickname    = exit_relay.nickname
+        self.locale      = controller.get_info("ip-to-country/%s" % exit_relay.address, 'unknown')
+    
+        
+    def _renewConnection(self):
         """ Forces IP change on TOR. """
         
         # Wait until a new circuit can be built
@@ -118,19 +115,18 @@ class TorHandlerMiddleware(HttpProxyMiddleware):
 
         if response.status in SETTINGS['RETRY_HTTP_CODES']: 
             # Force IP change before retrying in the RetryMiddleware
-            self.renewConnection()
+            self._renewConnection()
 
         return response
 
     def process_request(self, request, spider):
         """ Sets the proxy and some related information for logging purposes """
-        request.meta['proxy']       = SETTINGS['PRIVOXY_PROXY_ADDRESS']
+        request.meta['proxy'] = SETTINGS['PRIVOXY_PROXY_ADDRESS']
         
-        #print(self.IPaddress)
-        #request.meta['IPaddress']   = self.IPaddress
-        #request.meta['fingerprint'] = self.fingerprint
-        #request.meta['nickname']    = self.nickname
-        #request.meta['locale']      = self.locale 
+        request.meta['IPaddress']   = self.IPaddress
+        request.meta['fingerprint'] = self.fingerprint
+        request.meta['nickname']    = self.nickname
+        request.meta['locale']      = self.locale 
 
         return
 
