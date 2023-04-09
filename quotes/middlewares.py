@@ -59,7 +59,7 @@ class TorHandlerMiddleware(HttpProxyMiddleware):
         self.controller.add_event_listener(streamListener, EventType.STREAM)
         
         self.IPsettleTime = 2 # Wait time for the new IP to "settle in"
-        self.renewConnection()
+        self.renewConnection() # Force IP change when initialising
     
         return 
     
