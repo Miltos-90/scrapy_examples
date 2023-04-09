@@ -59,7 +59,7 @@ class TorHandlerMiddleware(HttpProxyMiddleware):
         self.controller.add_event_listener(streamListener, EventType.STREAM)
         
         self.IPsettleTime = 2 # Wait time for the new IP to "settle in"
-        self.firstUse = True
+        self.renewConnection()
     
         return 
     
@@ -125,10 +125,6 @@ class TorHandlerMiddleware(HttpProxyMiddleware):
     def process_request(self, request, spider):
         """ Sets the proxy and some related information for logging purposes """
         request.meta['proxy']       = SETTINGS['PRIVOXY_PROXY_ADDRESS']
-
-        if self.firstUse:
-            self.renewConnection()
-            self.firstUse = False
         
         #print(self.IPaddress)
         #request.meta['IPaddress']   = self.IPaddress
