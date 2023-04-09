@@ -29,150 +29,122 @@ Use a Downloader middleware if you need to do one of the following:
 * silently drop some requests.
 """ 
 
-from scrapy import signals
-import random
-from quotes.utils import Scheduler
-import logging
+import functools
+from stem import Signal
+from stem.control import Controller
+from scrapy.downloadermiddlewares.httpproxy import HttpProxyMiddleware
+from scrapy.downloadermiddlewares.defaultheaders import DefaultHeadersMiddleware
+from scrapy.utils.project import get_project_settings
+from stem import StreamStatus
+from stem.control import EventType, Controller
+from math import ceil
+from time import sleep
+from random_header_generator import HeaderGenerator 
 
-class QuotesSpiderMiddleware:
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the spider middleware does not modify the
-    # passed objects.
-
-    def __init__(self): 
-
-        return
-
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
-
-    def process_spider_input(self, response, spider):
-        # Called for each response that goes through the spider
-        # middleware and into the spider.
-
-        # Should return None or raise an exception.
-        return None
-
-    def process_spider_output(self, response, result, spider):
-        """ Called with the results returned from the Spider, after
-            it has processed the response.
-        """
-
-        # Must return an iterable of Request, or item objects.
-        for i in result:
-            yield i
-
-    def process_spider_exception(self, response, exception, spider):
-        # Called when a spider or process_spider_input() method
-        # (from other spider middleware) raises an exception.
-
-        # Should return either None or an iterable of Request or item objects.
-        pass
-
-    def process_start_requests(self, start_requests, spider):
-        # Called with the start requests of the spider, and works
-        # similarly to the process_spider_output() method, except
-        # that it doesn’t have a response associated.
-
-        # Must return only requests (not items).
-        for r in start_requests:
-            yield r
-
-    def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+SETTINGS = get_project_settings()
 
 
-class RandomRequestHeadersMiddleware(object):
+class TorHandlerMiddleware(HttpProxyMiddleware):
 
 
-    def __init__(self, 
-        numRequests   : int, # Number of requests to be performed befor header change
-        userAgentFile : str, # .txt file containing user agents
-        refererFile   : str  # .txt file containing referer URLs
-        ):
-
-        """ Initialisaton method """
-        self.userAgents = self._readtxt(userAgentFile)
-        self.referers   = self._readtxt(refererFile)
-        self.Scheduler  = Scheduler(numRequests) 
-
-        return
-
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        """ Method used by Scrapy to generate the spiders """
-
-        numRequests   = crawler.settings["NUM_REQUESTS_FOR_HEADER_CHANGE"]
-        userAgentFile = crawler.settings["USER_AGENT_LIST"]
-        refererFile   = crawler.settings["REFERER_LIST"]
-
-        return cls(numRequests, userAgentFile, refererFile)
-
-
-    @staticmethod
-    def _readtxt(file: str):
-        """ Generic .txt file reader for the user agent and referer lists """
-
-        with open(file, mode = 'r', encoding = 'utf-8') as f:
-            data = f.read().splitlines()
-        return data
-
-
-    def process_request(self, request, spider):
-        """ Called for each request that goes through the downloader
-            middleware (i.e. right before Scrapy sends the request to the website).
-            Generates random headers and sets them as default values to the requests
-        """ 
-
-        if self.Scheduler():
-
-            headers = self._generateRandomHeaders()
-
-            for key, value in headers.items():
-                request.headers.setdefault(key, value)
-
-            logging.info(f"Setting headers to {headers}")     
-
-        return
-
-    def _generateRandomHeaders(self) -> dict:
-        """ Header generator """
-
-        headers = {
-            'DNT'             : '1',
-            'Referer'         : random.choice(self.referers),
-            'Accept'          : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent'      : random.choice(self.userAgents),
-            'Connection'      : 'keep-alive',
-            'Accept-Language' : 'en-US,en;q=0.5',
-            'Accept-Encoding' : "gzip, deflate, br",
-            'Upgrade-Insecure-Requests' : '1',
-            }
+    def __init__(self, *args) -> None:
+        """Ininitialisation method """
         
-        return headers
+        super().__init__(args)
+        
+        self.controller = Controller.from_port(port = SETTINGS['TOR_CONTROL_PORT'])
+        self.controller.authenticate(password = SETTINGS['TOR_PASSWORD'])
 
+        streamListener  = functools.partial(self.streamEvent, self.controller)
+        self.controller.add_event_listener(streamListener, EventType.STREAM)
+        
+        self.IPsettleTime = 2 # Wait time for the new IP to "settle in"
+        self.firstUse = True
+    
+        return 
+    
 
-    def process_response(self, request, response, spider):
-        """ Called with the response returned from the downloader 
-            (i.e. right before it is being passed to the spider).
+    def streamEvent(self, controller, event):
+        """ Extracts available information regarding the currently used exit node.
+            Source: https://stem.torproject.org/tutorials/examples/exit_used.html
         """
+
+        if event.status == StreamStatus.SUCCEEDED and event.circ_id:
+
+            # Grab circuit
+            circ = controller.get_circuit(event.circ_id)
+
+            # Get exit node
+            exitFprint = circ.path[-1][0]
+            exit_relay  = controller.get_network_status(exitFprint)
+
+            # Extract info
+            self.targetIP    = event.target
+            self.IPaddress   = f'{exit_relay.address}:{exit_relay.or_port}'
+            self.fingerprint =  exit_relay.fingerprint
+            self.nickname    = exit_relay.nickname
+            self.locale      = controller.get_info("ip-to-country/%s" % exit_relay.address, 'unknown')
+
+
+            with open('./output.txt', mode = 'a', encoding = 'utf-8') as f:
+                f.write("\n")
+                f.write("====================================================\n")
+                f.write("  Exit relay for our connection to %s\n" % (event.target))
+                f.write("  address: %s:%i\n" % (exit_relay.address, exit_relay.or_port))
+                f.write("  fingerprint: %s\n" % exit_relay.fingerprint)
+                f.write("  nickname: %s\n" % exit_relay.nickname)
+                f.write("  locale: %s\n" % controller.get_info("ip-to-country/%s" % exit_relay.address, 'unknown'))
+                f.write("====================================================")
+                f.write("\n")
+
+
+
+    def renewConnection(self):
+        """ Forces IP change on TOR. """
+        
+        # Wait until a new circuit can be built
+        waitTime = ceil(self.controller.get_newnym_wait())
+        sleep(waitTime)
+
+        # Send signal to build a circuit
+        self.controller.signal(Signal.NEWNYM)
+        
+         # Wait until new IP settles in
+        sleep(self.IPsettleTime)
+    
+        
+    def process_response(self, request, response, spider):
+        """ Get a new identity depending on the response """
+
+        if response.status in SETTINGS['RETRY_HTTP_CODES']: 
+            # Force IP change before retrying in the RetryMiddleware
+            self.renewConnection()
 
         return response
 
+    def process_request(self, request, spider):
+        """ Sets the proxy and some related information for logging purposes """
+        request.meta['proxy']       = SETTINGS['PRIVOXY_PROXY_ADDRESS']
 
-    def process_exception(self, request, exception, spider):
-        """ Called when a download handler or a process_request()
-            (from other downloader middleware) raises an exception.
-        """
+        if self.firstUse:
+            self.renewConnection()
+            self.firstUse = False
         
-        pass
+        #print(self.IPaddress)
+        #request.meta['IPaddress']   = self.IPaddress
+        #request.meta['fingerprint'] = self.fingerprint
+        #request.meta['nickname']    = self.nickname
+        #request.meta['locale']      = self.locale 
+
+        return
 
 
-    def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+class HeadersMiddleware(DefaultHeadersMiddleware):
+
+    generator = HeaderGenerator()
+
+    def process_request(self, request, spider):
+        # TODO
+        print(request.meta)
+        #for k, v in self._headers:
+        #    request.headers.setdefault(k, v)

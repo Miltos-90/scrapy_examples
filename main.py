@@ -20,7 +20,7 @@ def clean():
         if os.path.isfile(filePath): 
             os.remove(filePath)
 
-clean()
+
 # ===============================================================
 
 """
@@ -28,8 +28,11 @@ TODO:
 Optimize insertQuote() inside databases.py to work with a single query.
 """
 
+clean()
+
 from scrapy.crawler import CrawlerProcess
 from quotes.spiders.quotes_spider import QuotesSpider
+from quotes.spiders.ifconfig_spider import IfconfigSpider
 from scrapy.utils.project import get_project_settings
 
 process = CrawlerProcess(get_project_settings())

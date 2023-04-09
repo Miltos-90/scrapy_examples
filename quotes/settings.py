@@ -18,7 +18,7 @@ ALLOWED_DOMAINS       = ['quotes.toscrape.com']
 START_URLS            = ['https://quotes.toscrape.com/page/1/'] 
 SPIDER_MODULES        = ['quotes.spiders']
 NEWSPIDER_MODULE      = 'quotes.spiders'
-ROBOTSTXT_OBEY        = True 
+ROBOTSTXT_OBEY        = False 
 
 """ Configure a delay for requests for the same website """
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -35,7 +35,7 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 16 # maximum number of concurrent requests perf
 LOG_FILE         = './logger.log'
 LOG_FORMAT       = '%(levelname)s: %(message)s'
 LOG_LEVEL        = logging.DEBUG
-COOKIES_ENABLED  = False # Disable cookies (enabled by default
+COOKIES_ENABLED  = True # Disable cookies (enabled by default
 
 """ Request filter configuration """
 DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter' # Disable duplicate URL filter
@@ -50,9 +50,18 @@ ITEM_PIPELINES   = {
 """ Downloader middleware configuration """
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'quotes.middlewares.RandomRequestHeadersMiddleware': 400,
-    'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware': None, # Set to none for random headers
-    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware':           None, # Set to none for random headers
+    'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': 100,
+    'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': 350,
+    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 550,
+    'scrapy.downloadermiddlewares.ajaxcrawl.AjaxCrawlMiddleware': 560,
+    'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware': 580,
+    'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 590,
+    'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 600,
+    'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': 700,
+    'quotes.middlewares.TorHandlerMiddleware': 750, # Instead of HttpProxyMiddleware
+    #'quotes.middlewares.HeadersMiddleware': 760,
+    'scrapy.downloadermiddlewares.stats.DownloaderStats': 850,
+    'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 900,
 }
 
 # Retrying failed requests status
@@ -60,16 +69,10 @@ RETRY_ENABLED    = True
 RETRY_TIMES      = 5
 RETRY_HTTP_CODES = [400, 500, 502, 503, 504, 522, 524, 408, 429]
 
-""" Request header configuration """
-# Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
-#   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
-#}
-#USER_AGENT = 'quotes (+http://www.yourdomain.com)' # Crawl responsibly by identifying yourself (and your website) on the user-agent
-NUM_REQUESTS_FOR_HEADER_CHANGE = 10
-USER_AGENT_LIST = './user_agent_database.txt'
-REFERER_LIST    = './referer_database.txt'
+# Tor handler 
+TOR_CONTROL_PORT        = 9051
+TOR_PASSWORD            = 'miltos'
+PRIVOXY_PROXY_ADDRESS   = 'http://127.0.0.1:8118'
 
 """ Extensions configuration """
 # Enable or disable extensions and related settings (See https://docs.scrapy.org/en/latest/topics/extensions.html)
