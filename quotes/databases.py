@@ -1,10 +1,9 @@
 """ Script that collects all helper functions used throughout """
 
 from sqlite3 import connect as sqlconnect
-from quotes.utils import Singleton
 
 
-class Database(metaclass = Singleton):
+class Database():
     """ Generic database class """
 
     def __init__(self, pathToFile : str):

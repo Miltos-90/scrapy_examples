@@ -3,9 +3,12 @@
 
 # ignore ALL .db files
 *.db
+*.db-shm
+*db-wal
 
 # ignore all .txt files
 *.txt
 
 # ignore ALL files in ANY directory named temp
 __pycache__/
+crawls/

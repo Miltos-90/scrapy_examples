@@ -21,17 +21,12 @@ getLogger('scrapy.core.scraper').addFilter(LoggerFilter())
 
 
 """ =================== DATABASE CONFIGURATION =================== """
-QuotesDatabase = Database(pathToFile = SETTINGS.get("DB_FILE"))
+QuotesDatabase = Database(pathToFile = SETTINGS.get("DB"))
+URLDatabase    = Database(pathToFile= SETTINGS.get("URL_LOG_DB"))
 
-# If the database does not exist, make it
-if not os.path.isfile(SETTINGS["DB_FILE"]): 
+# If the databases do not exist, make them
+if not os.path.isfile(SETTINGS["DB"]): 
     QuotesDatabase.make(SETTINGS["DB_SCHEMA"], SETTINGS["DB_PRAGMA"])
 
-else:
-    # If resuming from previous crawl, remove last recorded URL so that it will be re-scraped
-    QuotesDatabase.connect()
-    query = "DELETE FROM pages WHERE id = (SELECT MAX(id) FROM pages);"
-    QuotesDatabase.cursor.execute(query)
-    QuotesDatabase.close()
-
-
+if not os.path.isfile(SETTINGS["URL_LOG_DB"]): 
+    URLDatabase.make(SETTINGS["URL_LOG_SCHEMA"], SETTINGS["DB_PRAGMA"])

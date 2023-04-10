@@ -44,7 +44,7 @@ DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter' # Disable duplicate URL f
 # Configure item pipelines (See https://docs.scrapy.org/en/latest/topics/item-pipeline.html)
 ITEM_PIPELINES   = {
     'quotes.pipelines.DefaultValuesPipeline': 1,
-    'quotes.pipelines.SaveQuotesPipeline'   : 2,
+    'quotes.pipelines.SavePipeline'   : 2,
 }
 
 """ Downloader middleware configuration """
@@ -58,10 +58,11 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 590,
     'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 600,
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': 700,
-    'quotes.middlewares.TorHandlerMiddleware': 750, # Instead of HttpProxyMiddleware
+    'quotes.middlewares.TorHandlerMiddleware': 750,
     #'quotes.middlewares.HeadersMiddleware': 760,
     'scrapy.downloadermiddlewares.stats.DownloaderStats': 850,
     'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 900,
+    'quotes.middlewares.URLLoggerMiddleware': 950
 }
 
 # Retrying failed requests status
@@ -69,11 +70,33 @@ RETRY_ENABLED    = True
 RETRY_TIMES      = 5
 RETRY_HTTP_CODES = [400, 500, 502, 503, 504, 522, 524, 408, 429]
 
+
 # Tor handler 
 TOR_ENABLED             = True
+IP_CHANGE_CODES         = RETRY_HTTP_CODES
 TOR_CONTROL_PORT        = 9051
 TOR_PASSWORD            = 'miltos'
 PRIVOXY_PROXY_ADDRESS   = 'http://127.0.0.1:8118'
+IP_SETTLE_TIME          = 2 # Wait time for the new IP to "settle in"
+
+# URL Logger
+URL_LOG_ENABLED = True
+URL_LOG_DB   = "./url_logger.db"
+URL_LOG_SCHEMA = """
+    -- scraped pages schema
+    CREATE TABLE IF NOT EXISTS pages (
+            id            INTEGER  PRIMARY KEY,
+            url           TEXT     NOT NULL UNIQUE,
+            date          TEXT     NOT NULL,
+            status_code   INTEGER  NOT NULL,
+            fingerprint   TEXT     NOT NULL,
+            IP_address    TEXT     NOT NULL,
+            server_name   TEXT     NOT NULL,
+            locale        TEXT     NOT NULL,
+            down_latency  REAL    NOT NULL
+        ) STRICT;
+"""
+
 
 """ Extensions configuration """
 # Enable or disable extensions and related settings (See https://docs.scrapy.org/en/latest/topics/extensions.html)
@@ -85,20 +108,21 @@ PROGRESS_MONITOR_ENABLED = True
 PROGRESS_MONITOR_STEP    = 10
 
 """ Database-related settings """
-DB_FILE   = "./scrapy_quotes.db"
+DB   = "./scrapy_quotes.db"
 DB_PRAGMA = """
     PRAGMA foreign_keys=ON;
     PRAGMA journal_mode=WAL;
     PRAGMA synchronous=FULL;
     """
+
+
 DB_SCHEMA = """
     -- Quote data
     CREATE TABLE IF NOT EXISTS quotes (
         id          INTEGER PRIMARY KEY,
         quote       TEXT    NOT NULL UNIQUE,
-        tags        TEXT    NOT NULL,
-        author_id   INTEGER NOT NULL,
-        FOREIGN KEY(author_id)  REFERENCES authors(id)
+        keywords    TEXT    NOT NULL,
+        author      TEXT    NOT NULL
     ) STRICT;
 
     -- Author data
@@ -109,15 +133,6 @@ DB_SCHEMA = """
         birthplace  TEXT    NOT NULL,
         bio         TEXT    NOT NULL
     ) STRICT; 
-
-    -- scraped pages schema
-    CREATE TABLE IF NOT EXISTS pages (
-            id            INTEGER  PRIMARY KEY,
-            url           TEXT     NOT NULL UNIQUE,
-            date          TEXT     NOT NULL,
-            status_code   INTEGER  NOT NULL,
-            crawl_success INTEGER  NOT NULL
-        ) STRICT;
 """
 
 

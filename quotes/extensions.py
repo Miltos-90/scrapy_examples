@@ -1,24 +1,26 @@
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from datetime import datetime as dt
-from quotes import QuotesDatabase
-
+from .utils import Singleton
+from scrapy.crawler import Crawler
 from scrapy import Spider, Item
 
 
-class ProgressMonitor:
+class ProgressMonitor(metaclass = Singleton):
 
 
-    def __init__(self, numSteps):
+    def __init__(self, numSteps: int):
 
         self.numSteps  = numSteps      # Print every <numSteps> processed items
         self.itemCount = 0             # Counter for the number of items processed
         self.startTime = None          # Time the crawler started 
         self.tFormat   = '%d-%m-%Y %H:%M:%S'
 
+        return 
+
 
     @classmethod
-    def from_crawler(cls, crawler):
+    def from_crawler(cls, crawler: Crawler):
         """ Instantiate the extension and connect signals """
 
         # Check if the extension should be enabled 
@@ -60,10 +62,9 @@ class ProgressMonitor:
         if self._makeReport(): 
 
             rate = self._scrapeRate()
-            url  = self._lastUrl()
             time = self._now()
-            msg  = "{} | Items scraped: {} ({:.2f} items/sec) | Last visited: {}"\
-                    .format(time, self.itemCount, rate, url)
+            msg  = "{} | Items scraped: {} ({:.2f} items/sec)"\
+                    .format(time, self.itemCount, rate)
             
             print(msg, end = '\r')
 
@@ -82,25 +83,6 @@ class ProgressMonitor:
         """
         
         return self.itemCount % self.numSteps == 0
-    
-
-    def _lastUrl(self):
-        """ Get last visited URL """
-
-        QuotesDatabase.connect()
-
-        query = """
-            WITH finished_pages (id, url) AS (
-                SELECT id, url FROM pages WHERE crawl_success = 1
-            )
-            SELECT url 
-            FROM finished_pages 
-            WHERE id = (SELECT MAX(id) FROM finished_pages);    
-        """
-        response = QuotesDatabase.cursor.execute(query).fetchone()[0]
-        QuotesDatabase.close()
-
-        return response
 
 
     def _scrapeRate(self) -> float:

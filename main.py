@@ -7,15 +7,16 @@
 # https://medium.com/hackernoon/web-scraping-tutorial-with-python-tips-and-tricks-db070e70e071
 # https://scrapeops.io/web-scraping-playbook/web-scraping-guide-header-user-agents/#ensuring-proper-header-order
 
-# TODO User agent integration with scrapy: https://gist.github.com/seagatesoft/e7de4e3878035726731d
+
 # TODO Check how to set referer to previous page when scraping with a followup request (should be in my stackoverflow page)
+
 
 
 
 # ===============================================================
 def clean():
     import os
-    paths = ['./logger.log', './scrapy_quotes.db', './visited_urls.db']
+    paths = ['./logger.log', './scrapy_quotes.db', './url_logger.db']
     for filePath in paths:
         if os.path.isfile(filePath): 
             os.remove(filePath)
@@ -30,10 +31,12 @@ Optimize insertQuote() inside databases.py to work with a single query.
 
 clean()
 
-from scrapy.crawler import CrawlerProcess
-from quotes.spiders.quotes_spider import QuotesSpider
+# When clean is commented out, the extension reports wrong number of items for some reason.
 from quotes.spiders.ifconfig_spider import IfconfigSpider
+from quotes.spiders.quotes_spider import QuotesSpider
 from scrapy.utils.project import get_project_settings
+from scrapy.crawler import CrawlerProcess
+
 
 process = CrawlerProcess(get_project_settings())
 process.crawl(QuotesSpider)
