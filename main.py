@@ -24,10 +24,6 @@ def clean():
 
 # ===============================================================
 
-"""
-TODO:
-Optimize insertQuote() inside databases.py to work with a single query.
-"""
 
 clean()
 
