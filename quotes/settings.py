@@ -47,19 +47,23 @@ ITEM_PIPELINES   = {
     'quotes.pipelines.SavePipeline'   : 2,
 }
 
+""" Spider middleware configuration """
+SPIDER_MIDDLEWARES = {
+   'scrapy.spidermiddlewares.referer.RefererMiddleware': 10,
+}
+
 """ Downloader middleware configuration """
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': 100,
     'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': 350,
-    'quotes.middlewares.TorHandlerMiddleware': 450,
+    'quotes.middlewares.IPSwitchMiddleware': 450,
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 500,
     'scrapy.downloadermiddlewares.ajaxcrawl.AjaxCrawlMiddleware': 560,
     'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware': 580,
     'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 590,
     'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 600,
     'quotes.middlewares.HeadersMiddleware': 650,
-    'scrapy.spidermiddlewares.referer.RefererMiddleware': 660,
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': 700,
     'scrapy.downloadermiddlewares.stats.DownloaderStats': 850,
     'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 900,
@@ -153,11 +157,7 @@ DB_SCHEMA = """
 #TELNETCONSOLE_ENABLED = False
 
 
-# Enable or disable spider middlewares
-# See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#   'quotes.middlewares.QuotesSpiderMiddleware': 1,
-#}
+
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

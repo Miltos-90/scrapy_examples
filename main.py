@@ -8,11 +8,6 @@
 # https://scrapeops.io/web-scraping-playbook/web-scraping-guide-header-user-agents/#ensuring-proper-header-order
 
 
-# TODO Check how to set referer to previous page when scraping with a followup request (should be in my stackoverflow page)
-
-
-
-
 # ===============================================================
 def clean():
     import os
@@ -41,3 +36,5 @@ process = CrawlerProcess(get_project_settings())
 process.crawl(QuotesSpider)
 #process.crawl(QuotesSpider2) ... Run multiple spiders here if needed
 process.start() # the script will block here until all crawling jobs are finished
+
+# TODO: Finish header middleware (fix referrer). See which headers you should send. Log cookies

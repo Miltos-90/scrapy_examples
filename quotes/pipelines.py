@@ -19,6 +19,7 @@ class DefaultValuesPipeline():
 
         elif isQuote(item):
             return DefaultQuoteValuesPipeline.process_item(item)
+        
         else:
             raise DropItem()
 
@@ -70,6 +71,9 @@ class SavePipeline():
 
         elif isQuote(item):
             return SaveQuotePipeline.process_item(item)
+        
+        else:
+            raise DropItem()
 
 
 class SaveQuotePipeline():

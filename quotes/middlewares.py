@@ -9,6 +9,7 @@ from stem.response.events import Event
 from stem import StreamStatus, Signal
 from scrapy.crawler import Crawler
 from functools import partial
+from typing import Union
 from quotes import URLDatabase
 from scrapy import Spider
 from time import sleep
@@ -16,15 +17,18 @@ from math import ceil
 
 import random
 
-class TorHandlerMiddleware():
+class IPSwitchMiddleware():
+    """ Middleware to change IP when requests start failing. """
 
 
     def __init__(self, port, password, IPSwitchCodes, proxyAddress, IPsettleTime):
         """Ininitialisation method """
-                
+        
+        # TOR controller
         self.controller   = Controller.from_port(port = port)
         self.controller.authenticate(password = password)
 
+        # Listener for NEWNYM signals
         streamListener    = partial(self._streamEvent, self.controller)
         self.controller.add_event_listener(streamListener, EventType.STREAM)
 
@@ -42,6 +46,7 @@ class TorHandlerMiddleware():
 
     @classmethod
     def from_crawler(cls, crawler: Crawler):
+        """ Instantiates class """
 
         if not crawler.settings.getbool("TOR_ENABLED"): raise NotConfigured
         
@@ -59,6 +64,7 @@ class TorHandlerMiddleware():
         """
 
         if event.status == StreamStatus.SUCCEEDED and event.circ_id:
+
             # Grab circuit and exit node
             circ             = controller.get_circuit(event.circ_id)
             exitFprint       = circ.path[-1][0]
@@ -85,17 +91,18 @@ class TorHandlerMiddleware():
         return
     
         
-    def process_response(self, request: Request, response: Response, spider: Spider):
-        """ Get a new identity depending on the response """
+    def process_response(self, request: Request, response: Response, spider: Spider
+        ) -> Union[Request, Response]:
+        """ Renews IP depending on the response status """
 
-        #if not 'robots' in response.url:
-        #    if random.random() > 0.75:# if response.status in self.IPCodes: # Force IP change
-        #        self._renewConnection()
-        #        return request
-            
-        if response.status in self.IPCodes: # Force IP change
-            self._renewConnection()
-            return request
+        if not 'robots' in response.url:
+            if random.random() > 0.75:
+                self._renewConnection()
+                return request
+        
+        #if response.status in self.IPCodes: # Force IP change
+        #    self._renewConnection()
+        #    return request
 
         return response
     
@@ -112,11 +119,86 @@ class TorHandlerMiddleware():
         return
 
 
-class URLLoggerMiddleware():
+class HeadersMiddleware():
+    """ Middleware to set request headers depending on current IP address. """
 
-    def __init__(self):
+    def __init__(self, 
+        user_agents = None, device = None, browser = None, httpVersion = None
+        ) -> None:
+        """ Initialisation method. """
+
+        # Header generator object
+        self.generator = partial(
+            HeaderGenerator(user_agents), 
+            device = device, browser = browser, httpVersion = httpVersion
+            )
+    
+        # Initial values
+        self.currentIP, self.headers = None, {}
+
+        return
+
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        """ Instantiates class """
+        
+        if not crawler.settings.getbool("HEADER_GENERATOR_ENABLED"):
+            # Crawl with default headers -> return the DefaultHeadersMiddleware
+
+            headers = without_none_values(crawler.settings["DEFAULT_REQUEST_HEADERS"])
+            return DefaultHeadersMiddleware(headers.items())
+    
+        else: # Crawl with randomly generated headers
+            return cls(
+                user_agents = crawler.settings.get("USER_AGENTS"),
+                device      = crawler.settings.get("HEADER_DEVICE_TYPE"),
+                browser     = crawler.settings.get("HEADER_BROWSER_NAME"), 
+                httpVersion = crawler.settings.get("HEADER_HTTP_VERSION"), 
+            )
+
+
+    def process_request(self, request, spider) -> None:
+        """ Updates request headers if needed. """
+
+        if request.meta['IPaddress'] != self.currentIP:
+            
+            # Update headers and stored IP
+            self._update(locale = request.meta.get('locale', None))
+            self.currentIP = request.meta.get('IPaddress', None)
+
+        # Set request headers
+        for key, value in self.headers.items():
+            if key in ['User-Agent']:
+                request.headers[self._toBytes(key)] = [self._toBytes(value)]
+        
+        return
+    
+
+    def _update(self, locale: str) -> None:
+        """ Updates headers """
+
+        if locale in locales: 
+            self.headers = self.generator(country = locale)
+        else: 
+            self.headers = self.generator(country = 'us')
+        
+        return
+
+
+    @staticmethod
+    def _toBytes(text:str, encoding: str = 'utf-8') -> bytearray:
+        """ Strings to bytes converter. """
+        return bytes(text, encoding)
+
+
+class URLLoggerMiddleware():
+    """ Middleware to log metadata for all succesful requests. """
+
+    def __init__(self) -> None:
         """ Initialisation method """
-        self.db  = URLDatabase
+
+        self.db   = URLDatabase
         self.null = 'N/A'
         
         return
@@ -124,12 +206,14 @@ class URLLoggerMiddleware():
 
     @classmethod
     def from_crawler(cls, crawler: Crawler):
+        """ Instantiates class. """
 
         if not crawler.settings.getbool("URL_LOG_ENABLED"): raise NotConfigured
         return cls()
     
 
     def process_response(self, request: Request, response: Response, spider: Spider):
+        """ Saves request metadata to an sqlite database """
         
         query = """
             INSERT OR IGNORE INTO 
@@ -149,7 +233,7 @@ class URLLoggerMiddleware():
             request.headers.get('Referer', self.null).decode("utf-8"),
             request.headers.get('User-Agent', self.null).decode("utf-8"),
             request.meta.get('download_latency', self.null) # download latency
-        ) # TODO: Log cookies, Default user agent reset!
+        )
         
         self.db.connect()
         self.db.cursor.execute(query, task)
@@ -160,52 +244,3 @@ class URLLoggerMiddleware():
 
     def process_request(self, request: Request, spider: Spider) -> None: return
 
-
-
-class HeadersMiddleware():
-
-    def __init__(self, user_agents = None, device = None, browser = None, httpVersion = None):
-
-        self.generator = partial(
-            HeaderGenerator(user_agents), 
-            device = device, browser = browser, httpVersion = httpVersion
-            )
-
-        return
-
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        
-        if not crawler.settings.getbool("HEADER_GENERATOR_ENABLED"):
-            # Crawl with default headers -> return the DefaultHeadersMiddleware
-            headers = without_none_values(crawler.settings["DEFAULT_REQUEST_HEADERS"])
-            return DefaultHeadersMiddleware(headers.items())
-    
-        else: # Crawl with randomly generated headers
-            return cls(
-                user_agents = crawler.settings.get("USER_AGENTS"),
-                device      = crawler.settings.get("HEADER_DEVICE_TYPE"),
-                browser     = crawler.settings.get("HEADER_BROWSER_NAME"), 
-                httpVersion = crawler.settings.get("HEADER_HTTP_VERSION"), 
-            )
-
-
-    def process_request(self, request, spider):
-
-        print(request.url, request.meta)
-        locale = request.meta.get('locale', None)
-
-        if locale in locales: headerDict = self.generator(country = locale)
-        else                : headerDict = self.generator(country = 'us')
-        
-        for key, value in headerDict.items():
-            if key in ['User-Agent']:
-                request.headers[self._toBytes(key)] = [self._toBytes(value)]
-        
-        return
-
-
-    @staticmethod
-    def _toBytes(text:str, encoding: str = 'utf-8') -> bytearray:
-        return bytes(text, encoding)
