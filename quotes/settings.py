@@ -52,14 +52,15 @@ ITEM_PIPELINES   = {
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': 100,
     'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': 350,
-    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 550,
+    'quotes.middlewares.TorHandlerMiddleware': 450,
+    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 500,
     'scrapy.downloadermiddlewares.ajaxcrawl.AjaxCrawlMiddleware': 560,
     'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware': 580,
     'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 590,
     'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 600,
+    'quotes.middlewares.HeadersMiddleware': 650,
+    'scrapy.spidermiddlewares.referer.RefererMiddleware': 660,
     'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': 700,
-    'quotes.middlewares.TorHandlerMiddleware': 750,
-    #'quotes.middlewares.HeadersMiddleware': 760,
     'scrapy.downloadermiddlewares.stats.DownloaderStats': 850,
     'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 900,
     'quotes.middlewares.URLLoggerMiddleware': 950
@@ -70,29 +71,40 @@ RETRY_ENABLED    = True
 RETRY_TIMES      = 5
 RETRY_HTTP_CODES = [400, 500, 502, 503, 504, 522, 524, 408, 429]
 
-
 # Tor handler 
-TOR_ENABLED             = True
-IP_CHANGE_CODES         = RETRY_HTTP_CODES
-TOR_CONTROL_PORT        = 9051
-TOR_PASSWORD            = 'miltos'
-PRIVOXY_PROXY_ADDRESS   = 'http://127.0.0.1:8118'
-IP_SETTLE_TIME          = 2 # Wait time for the new IP to "settle in"
+TOR_ENABLED           = True
+IP_CHANGE_CODES       = RETRY_HTTP_CODES
+TOR_CONTROL_PORT      = 9051
+TOR_PASSWORD          = 'miltos'
+PRIVOXY_PROXY_ADDRESS = 'http://127.0.0.1:8118'
+IP_SETTLE_TIME        = 2 # Wait time for the new IP to "settle in"
+
+# Header generator - see random_header_generator package
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_3; rv:92.0) Gecko/20100101 Firefox/92.0'
+REFERER_ENABLED          = True
+HEADER_GENERATOR_ENABLED = True
+REFERRER_POLICY          = 'same-origin'
+HEADER_DEVICE_TYPE       = 'desktop' 
+HEADER_BROWSER_NAME      = None
+HEADER_HTTP_VERSION      = 1
+USER_AGENTS              = 'program'
 
 # URL Logger
 URL_LOG_ENABLED = True
-URL_LOG_DB   = "./url_logger.db"
-URL_LOG_SCHEMA = """
+URL_LOG_DB      = "./url_logger.db"
+URL_LOG_SCHEMA  = """
     -- scraped pages schema
     CREATE TABLE IF NOT EXISTS pages (
-            id            INTEGER  PRIMARY KEY,
-            url           TEXT     NOT NULL UNIQUE,
-            date          TEXT     NOT NULL,
-            status_code   INTEGER  NOT NULL,
-            fingerprint   TEXT     NOT NULL,
-            IP_address    TEXT     NOT NULL,
-            server_name   TEXT     NOT NULL,
-            locale        TEXT     NOT NULL,
+            id            INTEGER PRIMARY KEY,
+            url           TEXT    NOT NULL UNIQUE,
+            date          TEXT    NOT NULL,
+            status_code   INTEGER NOT NULL,
+            fingerprint   TEXT    NOT NULL,
+            IP_address    TEXT    NOT NULL,
+            server_name   TEXT    NOT NULL,
+            locale        TEXT    NOT NULL,
+            referer       TEXT    NOT NULL,
+            user_agent    TEXT    NOT NULL,
             down_latency  REAL    NOT NULL
         ) STRICT;
 """

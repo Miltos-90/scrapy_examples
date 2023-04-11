@@ -1,6 +1,7 @@
-
 from scrapy.downloadermiddlewares.defaultheaders import DefaultHeadersMiddleware
-from random_header_generator import HeaderGenerator 
+from random_header_generator.definitions import COUNTRIES as locales
+from random_header_generator import HeaderGenerator
+from scrapy.utils.python import without_none_values
 from stem.control import EventType, Controller
 from scrapy.exceptions import NotConfigured
 from scrapy.http import Request, Response
@@ -115,7 +116,10 @@ class URLLoggerMiddleware():
 
     def __init__(self):
         """ Initialisation method """
-        self.db = URLDatabase
+        self.db  = URLDatabase
+        self.null = 'N/A'
+        
+        return
 
 
     @classmethod
@@ -129,20 +133,23 @@ class URLLoggerMiddleware():
         
         query = """
             INSERT OR IGNORE INTO 
-            pages (url, status_code, date, fingerprint, IP_address, server_name, locale, down_latency) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            pages (url, status_code, date, fingerprint, IP_address, 
+            server_name, locale, referer, user_agent, down_latency) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
-
+        
         task = (
-            response.url,                               # url
-            response.status,                            # status_code
-            response.headers['date'].decode("utf-8"),   # date
-            request.meta['fingerprint'],       # fingerprint
-            request.meta['IPaddress'],         # IP_address
-            request.meta['nickname'],          # server_name
-            request.meta['locale'],            # locale
-            request.meta['download_latency']   # download latency
-        )
+            response.url,
+            response.status,
+            response.headers['date'].decode("utf-8"),
+            request.meta.get('fingerprint', self.null),
+            request.meta.get('IPaddress',   self.null),
+            request.meta.get('nickname',    self.null),
+            request.meta.get('locale',      self.null),
+            request.headers.get('Referer', self.null).decode("utf-8"),
+            request.headers.get('User-Agent', self.null).decode("utf-8"),
+            request.meta.get('download_latency', self.null) # download latency
+        ) # TODO: Log cookies, Default user agent reset!
         
         self.db.connect()
         self.db.cursor.execute(query, task)
@@ -155,12 +162,50 @@ class URLLoggerMiddleware():
 
 
 
-class HeadersMiddleware(DefaultHeadersMiddleware):
+class HeadersMiddleware():
 
-    generator = HeaderGenerator()
+    def __init__(self, user_agents = None, device = None, browser = None, httpVersion = None):
+
+        self.generator = partial(
+            HeaderGenerator(user_agents), 
+            device = device, browser = browser, httpVersion = httpVersion
+            )
+
+        return
+
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        
+        if not crawler.settings.getbool("HEADER_GENERATOR_ENABLED"):
+            # Crawl with default headers -> return the DefaultHeadersMiddleware
+            headers = without_none_values(crawler.settings["DEFAULT_REQUEST_HEADERS"])
+            return DefaultHeadersMiddleware(headers.items())
+    
+        else: # Crawl with randomly generated headers
+            return cls(
+                user_agents = crawler.settings.get("USER_AGENTS"),
+                device      = crawler.settings.get("HEADER_DEVICE_TYPE"),
+                browser     = crawler.settings.get("HEADER_BROWSER_NAME"), 
+                httpVersion = crawler.settings.get("HEADER_HTTP_VERSION"), 
+            )
+
 
     def process_request(self, request, spider):
-        # TODO
-        print(request.meta)
-        #for k, v in self._headers:
-        #    request.headers.setdefault(k, v)
+
+        print(request.url, request.meta)
+        locale = request.meta.get('locale', None)
+
+        if locale in locales: headerDict = self.generator(country = locale)
+        else                : headerDict = self.generator(country = 'us')
+        
+        for key, value in headerDict.items():
+            if key in ['User-Agent']:
+                request.headers[self._toBytes(key)] = [self._toBytes(value)]
+        
+        return
+
+
+    @staticmethod
+    def _toBytes(text:str, encoding: str = 'utf-8') -> bytearray:
+        return bytes(text, encoding)

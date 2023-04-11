@@ -14,10 +14,12 @@ class QuotesSpider(Spider):
     name            = SETTINGS["BOT_NAME"]
     custom_settings = {'JOBDIR': './crawls/quotes_spider'}
 
+
     def parse(self, response: Response):
         """ Handler for the response downloaded for each of the requests made
         """     
 
+        
         # Loop over all quotes
         for quoteDiv in response.xpath('//div[@class="quote"]'):
             
@@ -31,37 +33,11 @@ class QuotesSpider(Spider):
                 callback = self._parseAuthor
                 )
 
-        #self._addURL(response)
-
         # Yield link to the next page
         yield from response.follow_all(
             xpath    = '//li[@class="next"]//@href', 
             callback = self.parse
         )
-
-        return
-
-    def _addURL(self, response: Response):
-        """ Adds scraped URL to the database """
-
-        query = """
-            INSERT OR IGNORE INTO 
-            pages (url, status_code, date, fingerprint, IP_address, server_name, locale) 
-            VALUES (?, ?, ?, ?, ?, ?, ?);
-            """
-        task = (
-            response.url,                               # url
-            response.status,                            # status_code
-            response.headers['date'].decode("utf-8"),   # date
-            response.request.meta['fingerprint'],       # fingerprint
-            response.request.meta['IPaddress'],         # IP_address
-            response.request.meta['nickname'],          # server_name
-            response.request.meta['locale'],            # locale
-        )
-        
-        QuotesDatabase.connect()
-        QuotesDatabase.cursor.execute(query, task)
-        QuotesDatabase.close()
 
         return
 

@@ -1,9 +1,10 @@
 from quotes import QuotesDatabase
-from scrapy import Spider, Item 
+from scrapy import Spider, Item
+from scrapy.exceptions import DropItem
 
 
-def isAuthor(item) -> bool: return "name" in item.keys()
-def isQuote(item)  -> bool: return "quote" in item.keys()
+def isAuthor(item) -> bool: return bool(item) and "name" in item.keys()
+def isQuote(item)  -> bool: return bool(item) and "quote" in item.keys()
 
 class DefaultValuesPipeline():
     """ Sets default values to all fields of an item """
@@ -18,7 +19,8 @@ class DefaultValuesPipeline():
 
         elif isQuote(item):
             return DefaultQuoteValuesPipeline.process_item(item)
-        
+        else:
+            raise DropItem()
 
 class DefaultQuoteValuesPipeline():
     """ Sets default values to all fields """

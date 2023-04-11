@@ -16,10 +16,13 @@
 # ===============================================================
 def clean():
     import os
+    import shutil
     paths = ['./logger.log', './scrapy_quotes.db', './url_logger.db']
     for filePath in paths:
         if os.path.isfile(filePath): 
             os.remove(filePath)
+    
+    shutil.rmtree('./crawls')
 
 
 # ===============================================================
