@@ -168,15 +168,13 @@ class HeadersMiddleware():
             self.currentIP = request.meta.get('IPaddress', None)
 
         # Set request headers
-       
         for key, value in self.headers.items():
-            if key not in ['Referer']:
-                request.headers[self._toBytes(key)] = [self._toBytes(value)]
 
-            elif key == 'Referer':
-                bkey = self._toBytes(key) 
-                if bkey not in request.headers.keys():
-                    request.headers[bkey] = [self._toBytes(value)]
+            # Convert to bytes and replace (apart from referer if already set)
+            bkey, bvalue = self._toBytes(key), self._toBytes(value)
+            
+            if (key not in ['Referer']) or (bkey not in request.headers.keys()):
+                request.headers[bkey] = [bvalue]
         
         return
     

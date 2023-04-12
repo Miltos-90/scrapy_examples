@@ -18,7 +18,7 @@ ALLOWED_DOMAINS       = ['quotes.toscrape.com']
 START_URLS            = ['https://quotes.toscrape.com/page/1/'] 
 SPIDER_MODULES        = ['quotes.spiders']
 NEWSPIDER_MODULE      = 'quotes.spiders'
-ROBOTSTXT_OBEY        = True 
+ROBOTSTXT_OBEY        = False 
 
 """ Configure a delay for requests for the same website """
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -55,7 +55,6 @@ SPIDER_MIDDLEWARES = {
 """ Downloader middleware configuration """
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware': 100,
     'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': 350,
     'quotes.middlewares.IPSwitchMiddleware': 450,
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 500,
