@@ -96,7 +96,7 @@ class IPSwitchMiddleware():
         """ Renews IP depending on the response status """
 
         if not 'robots' in response.url:
-            if random.random() > 0.75:
+            if random.random() > 0.5:
                 self._renewConnection()
                 return request
         
@@ -161,7 +161,7 @@ class HeadersMiddleware():
     def process_request(self, request, spider) -> None:
         """ Updates request headers if needed. """
 
-        if request.meta['IPaddress'] != self.currentIP:
+        if request.meta['IPaddress'] != self.currentIP: # Time to update headers
             
             # Update headers and stored IP
             self._update(locale = request.meta.get('locale', None))
@@ -169,8 +169,13 @@ class HeadersMiddleware():
 
         # Set request headers
         for key, value in self.headers.items():
-            if key in ['User-Agent']:
+            if key == 'User-Agent':
                 request.headers[self._toBytes(key)] = [self._toBytes(value)]
+
+            if key == 'Referer':
+                bReferer = self._toBytes('Referer') 
+                if bReferer not in request.headers.keys():
+                    request.headers[bReferer] = [self._toBytes(value)]
         
         return
     
