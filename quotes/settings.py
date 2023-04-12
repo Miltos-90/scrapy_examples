@@ -84,7 +84,6 @@ PRIVOXY_PROXY_ADDRESS = 'http://127.0.0.1:8118'
 IP_SETTLE_TIME        = 2 # Wait time for the new IP to "settle in"
 
 # Header generator - see random_header_generator package
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_3; rv:92.0) Gecko/20100101 Firefox/92.0'
 REFERER_ENABLED          = True
 HEADER_GENERATOR_ENABLED = True
 REFERRER_POLICY          = 'same-origin'

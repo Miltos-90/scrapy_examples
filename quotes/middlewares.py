@@ -95,14 +95,14 @@ class IPSwitchMiddleware():
         ) -> Union[Request, Response]:
         """ Renews IP depending on the response status """
 
-        if not 'robots' in response.url:
-            if random.random() > 0.5:
-                self._renewConnection()
-                return request
+        #if not 'robots' in response.url:
+        #    if random.random() > 0.5:
+        #        self._renewConnection()
+        #        return request
         
-        #if response.status in self.IPCodes: # Force IP change
-        #    self._renewConnection()
-        #    return request
+        if response.status in self.IPCodes: # Force IP change
+            self._renewConnection()
+            return request
 
         return response
     
@@ -168,14 +168,15 @@ class HeadersMiddleware():
             self.currentIP = request.meta.get('IPaddress', None)
 
         # Set request headers
+       
         for key, value in self.headers.items():
-            if key == 'User-Agent':
+            if key not in ['Referer']:
                 request.headers[self._toBytes(key)] = [self._toBytes(value)]
 
-            if key == 'Referer':
-                bReferer = self._toBytes('Referer') 
-                if bReferer not in request.headers.keys():
-                    request.headers[bReferer] = [self._toBytes(value)]
+            elif key == 'Referer':
+                bkey = self._toBytes(key) 
+                if bkey not in request.headers.keys():
+                    request.headers[bkey] = [self._toBytes(value)]
         
         return
     
