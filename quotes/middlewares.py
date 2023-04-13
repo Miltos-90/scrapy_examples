@@ -21,7 +21,8 @@ class IPSwitchMiddleware():
     """ Middleware to change IP when requests start failing. """
 
 
-    def __init__(self, port, password, IPSwitchCodes, proxyAddress, IPsettleTime):
+    def __init__(self, 
+        port: str, password: str, IPSwitchCodes: list[int], proxyAddress: str, IPsettleTime: int):
         """Ininitialisation method """
         
         # TOR controller
