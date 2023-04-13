@@ -2,8 +2,6 @@ from ..items import QuoteLoader, AuthorLoader
 from scrapy import Spider
 from scrapy.utils.project import get_project_settings
 from scrapy.http import Response
-from quotes import QuotesDatabase
-
 SETTINGS = get_project_settings()
 
 
@@ -18,7 +16,6 @@ class QuotesSpider(Spider):
     def parse(self, response: Response):
         """ Handler for the response downloaded for each of the requests made
         """
-
         # Loop over all quotes
         for quoteDiv in response.xpath('//div[@class="quote"]'):
             

@@ -18,14 +18,14 @@ ALLOWED_DOMAINS       = ['quotes.toscrape.com']
 START_URLS            = ['https://quotes.toscrape.com/page/1/'] 
 SPIDER_MODULES        = ['quotes.spiders']
 NEWSPIDER_MODULE      = 'quotes.spiders'
-ROBOTSTXT_OBEY        = True
+ROBOTSTXT_OBEY        = False
 
 """ Configure a delay for requests for the same website """
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY           = 0     # Time [sec] to wait before downloading consecutive pages from the same website. (Default = 0)
-RANDOMIZE_DOWNLOAD_DELAY = False # Random time in [0.5 * DOWNLOAD_DELAY and 1.5 * DOWNLOAD_DELAY] to wait while fetching requests from the same website.
-DOWNLOAD_TIMEOUT         = 30    # Time [sec] that the downloader will wait before timing out. (Default = 160)
+DOWNLOAD_DELAY           = 0.1  # Time [sec] to wait before downloading consecutive pages from the same website. (Default = 0)
+RANDOMIZE_DOWNLOAD_DELAY = True # Random time in [0.5 * DOWNLOAD_DELAY and 1.5 * DOWNLOAD_DELAY] to wait while fetching requests from the same website.
+DOWNLOAD_TIMEOUT         = 30   # Time [sec] that the downloader will wait before timing out. (Default = 160)
 
 # The download delay setting will honor only one of:
 CONCURRENT_REQUESTS_PER_DOMAIN = 16 # maximum number of concurrent requests performed to a single domain.
@@ -55,17 +55,8 @@ SPIDER_MIDDLEWARES = {
 """ Downloader middleware configuration """
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware': 350,
     'quotes.middlewares.IPSwitchMiddleware': 450,
-    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 500,
-    'scrapy.downloadermiddlewares.ajaxcrawl.AjaxCrawlMiddleware': 560,
-    'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware': 580,
-    'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 590,
-    'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 600,
     'quotes.middlewares.HeadersMiddleware': 650,
-    'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': 700,
-    'scrapy.downloadermiddlewares.stats.DownloaderStats': 850,
-    'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 900,
     'quotes.middlewares.URLLoggerMiddleware': 950
 }
 
@@ -98,16 +89,16 @@ URL_LOG_SCHEMA  = """
     -- scraped pages schema
     CREATE TABLE IF NOT EXISTS pages (
             id            INTEGER PRIMARY KEY,
-            url           TEXT    NOT NULL UNIQUE,
+            url           TEXT    NOT NULL,
             date          TEXT    NOT NULL,
             status_code   INTEGER NOT NULL,
-            fingerprint   TEXT    NOT NULL,
-            IP_address    TEXT    NOT NULL,
-            server_name   TEXT    NOT NULL,
-            locale        TEXT    NOT NULL,
-            referer       TEXT    NOT NULL,
-            user_agent    TEXT    NOT NULL,
-            down_latency  REAL    NOT NULL
+            fingerprint   TEXT,
+            IP_address    TEXT,
+            server_name   TEXT,
+            locale        TEXT,
+            referer       TEXT,
+            user_agent    TEXT,
+            down_latency  REAL
         ) STRICT;
 """
 

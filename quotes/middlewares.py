@@ -14,8 +14,8 @@ from quotes import URLDatabase
 from scrapy import Spider
 from time import sleep
 from math import ceil
+import requests
 
-import random
 
 class IPSwitchMiddleware():
     """ Middleware to change IP when requests start failing. """
@@ -36,11 +36,13 @@ class IPSwitchMiddleware():
         self.IPsettleTime = IPsettleTime
         self.IPCodes      = IPSwitchCodes
         self.proxyAddress = proxyAddress
-        self.targetIP     = None
         self.IPaddress    = None
         self.fingerprint  = None
         self.nickname     = None
         self.locale       = None
+
+        # Trigger a stream event to gather the initial exit node's info
+        requests.request(url = 'https://www.icanhazip.com', method = 'GET').text.strip('\n')
     
         return
     
@@ -72,7 +74,6 @@ class IPSwitchMiddleware():
             exit_relay       = controller.get_network_status(exitFprint)
 
             # Extract info
-            self.targetIP    = event.target
             self.IPaddress   = f'{exit_relay.address}:{exit_relay.or_port}'
             self.fingerprint = exit_relay.fingerprint
             self.nickname    = exit_relay.nickname
@@ -85,9 +86,9 @@ class IPSwitchMiddleware():
         """ Forces IP change on TOR. """
         
         wTime = ceil(self.controller.get_newnym_wait())
-        sleep(wTime)                            # Wait until a new circuit can be built
-        self.controller.signal(Signal.NEWNYM)   # Send signal to build a circuit        
-        sleep(self.IPsettleTime)                # Wait until new IP settles in
+        sleep(wTime)
+        self.controller.signal(Signal.NEWNYM)   
+        sleep(self.IPsettleTime)
 
         return
     
@@ -95,11 +96,6 @@ class IPSwitchMiddleware():
     def process_response(self, request: Request, response: Response, spider: Spider
         ) -> Union[Request, Response]:
         """ Renews IP depending on the response status """
-
-        #if not 'robots' in response.url:
-        #    if random.random() > 0.5:
-        #        self._renewConnection()
-        #        return request
         
         if response.status in self.IPCodes: # Force IP change
             self._renewConnection()
@@ -110,7 +106,7 @@ class IPSwitchMiddleware():
 
     def process_request(self, request: Request, spider: Spider) -> None:
         """ Sets the proxy and some related information for logging purposes """
-
+        
         request.meta['proxy']       = self.proxyAddress
         request.meta['IPaddress']   = self.IPaddress
         request.meta['fingerprint'] = self.fingerprint
@@ -177,7 +173,6 @@ class HeadersMiddleware():
                 value = request.headers.pop(key, self.headers[key])
             request.headers[key] = value
         
-        print(f'{request.url} : {request.headers}')
         return
     
 

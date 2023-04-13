@@ -59,78 +59,12 @@ curl -x 127.0.0.1:8118 https://ifconfig.me # test privoxy
 
 If everything works as expected, the first IP should be different than the second and third one.
 
-## Integration with Scrapy
+## Scrapy
 
-To see first-hand the use of Tor with scrapy, make a new virtual environment and install all dependencies
+To see first-hand the use of Tor with scrapy, make a new virtual environment, install all dependencies, and run the main file:
 ```
 python3 -m venv venv # create a virtual environment
 source venv/bin/activate # activate it
 pip install -U scrapy stem requests[socks] # install dependencies
-scrapy startproject mokha; cd mokha # create a project
-scrapy genspider ifconfig ifconfig.me # create a spider
-```
-
-Navigate to `./mokha/middlewares.py` and add the following (replace `PASSWORD_HERE` with the password you chose during the *Configuring Tor* step.):
-
-```python
-
-# end of middlewares.py
-from stem import Signal
-from stem.control import Controller
-from scrapy.downloadermiddlewares.httpproxy import HttpProxyMiddleware
-
-
-def new_tor_identity():
-    with Controller.from_port(port=9051) as controller:
-        controller.authenticate(password='PASSWORDHERE')
-        controller.signal(Signal.NEWNYM)
-
-
-class ProxyMiddleware(HttpProxyMiddleware):
-    def process_response(self, request, response, spider):
-        # Get a new identity depending on the response
-        if response.status != 200:
-            new_tor_identity()
-            return request
-        return response
-
-
-    def process_request(self, request, spider):
-        # Set the Proxy
-
-        # A new identity for each request
-        # Comment out if you want to get a new Identity only through process_response
-        new_tor_identity()
-
-        request.meta['proxy'] = 'http://127.0.0.1:8118'
-```
-
-Simply put, the function `new_tor_identity` sends a signal to the Tor controller, to issue us a new identity. This function can be called in either the **process_request** or **process_response** functions. If you want to issue a new identity for every request, place it in the former function. But if you’d like to get a new identity in certain situations (e.g. you have been blocked), call it from process_response after verifying that you have been blocked.
-
-To enable the middleware, add the following lines at the end of `./mokha/settings.py`
-```python
-DOWNLOADER_MIDDLEWARES = {
-    'mokha.middlewares.ProxyMiddleware': 543,
-}
-```
-
-Finally, implement the crawler (ifconfig.py) as shown below, and place it inside the `./mokha/spiders/` folder.
-This is really a very simple proof-of-concept crawler as all what it does is querying a single page and logging our IP.
-
-```python
-import scrapy
-
-class IfconfigSpider(scrapy.Spider):
-    name = 'ifconfig'
-    allowed_domains = ['ifconfig.me']
-    start_urls = ['http://ifconfig.me/']
-
-    def parse(self, response):
-        self.log('IP : %s' % response.css('#ip_address').get())
-```
-
-Going through the logs after running the crawler twice with `scrapy crawl ifconfig` you will see that two different IPs have been reported:
-```
-YYYY-MM-DD HH:MM:SS [ifconfig] DEBUG: IP : <strong id="ip_address">185.220.101.77</strong>
-YYYY-MM-DD HH:MM:SS [ifconfig] DEBUG: IP : <strong id="ip_address">178.218.144.99</strong>
+torify python ./main.py
 ```
