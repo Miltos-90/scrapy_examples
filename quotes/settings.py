@@ -18,7 +18,7 @@ ALLOWED_DOMAINS       = ['quotes.toscrape.com']
 START_URLS            = ['https://quotes.toscrape.com/page/1/'] 
 SPIDER_MODULES        = ['quotes.spiders']
 NEWSPIDER_MODULE      = 'quotes.spiders'
-ROBOTSTXT_OBEY        = False 
+ROBOTSTXT_OBEY        = True
 
 """ Configure a delay for requests for the same website """
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay

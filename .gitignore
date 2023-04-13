@@ -8,6 +8,7 @@
 
 # ignore all .txt files
 *.txt
+out
 
 # ignore ALL files in ANY directory named temp
 __pycache__/

@@ -37,4 +37,4 @@ process.crawl(QuotesSpider)
 #process.crawl(QuotesSpider2) ... Run multiple spiders here if needed
 process.start() # the script will block here until all crawling jobs are finished
 
-# TODO: Finish header middleware (fix referrer). See which headers you should send. Log cookies
+# TODO: Fix referer and user agent in robotstxtmiddleware. Log cookies

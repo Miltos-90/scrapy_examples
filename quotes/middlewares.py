@@ -1,5 +1,5 @@
 from scrapy.downloadermiddlewares.defaultheaders import DefaultHeadersMiddleware
-from random_header_generator.definitions import COUNTRIES as locales
+from random_header_generator.definitions import COUNTRIES
 from random_header_generator import HeaderGenerator
 from scrapy.utils.python import without_none_values
 from stem.control import EventType, Controller
@@ -135,6 +135,7 @@ class HeadersMiddleware():
     
         # Initial values
         self.currentIP, self.headers = None, {}
+        self.referer = self._toBytes('Referer')
 
         return
 
@@ -156,7 +157,7 @@ class HeadersMiddleware():
                 browser     = crawler.settings.get("HEADER_BROWSER_NAME"), 
                 httpVersion = crawler.settings.get("HEADER_HTTP_VERSION"), 
             )
-
+    
 
     def process_request(self, request, spider) -> None:
         """ Updates request headers if needed. """
@@ -169,23 +170,25 @@ class HeadersMiddleware():
 
         # Set request headers
         for key, value in self.headers.items():
-
-            # Convert to bytes and replace (apart from referer if already set)
-            bkey, bvalue = self._toBytes(key), self._toBytes(value)
             
-            if (key not in ['Referer']) or (bkey not in request.headers.keys()):
-                request.headers[bkey] = [bvalue]
+            # Get referer set by the spider middlewares if exists
+            if key == self.referer: 
+                value = request.headers.pop(key, self.headers[key])
+            request.headers[key] = value
         
+        print(f'{request.url} : {request.headers}')
         return
     
 
     def _update(self, locale: str) -> None:
         """ Updates headers """
 
-        if locale in locales: 
-            self.headers = self.generator(country = locale)
-        else: 
-            self.headers = self.generator(country = 'us')
+        if locale not in COUNTRIES: locale = 'us'
+
+        self.headers = {
+            self._toBytes(k): [self._toBytes(v)] 
+            for k, v in self.generator(country = locale).items()
+            }
         
         return
 
