@@ -31,7 +31,7 @@ class ProgressMonitor(metaclass = Singleton):
         step = crawler.settings.getint('PROGRESS_MONITOR_STEP', 1000)
         ext  = cls(numSteps = step)
 
-        # Map extension object to signals
+        # Connect signals
         crawler.signals.connect(ext.spiderOpened, signal = signals.spider_opened)
         crawler.signals.connect(ext.spiderClosed, signal = signals.spider_closed)
         crawler.signals.connect(ext.itemScraped,  signal = signals.item_scraped)

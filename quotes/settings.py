@@ -10,15 +10,16 @@ import logging
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 """ General spider/bot settings """
-CLOSESPIDER_ITEMCOUNT = 0 # Default: 0
-CLOSESPIDER_TIMEOUT   = 0 # Default: 0 [sec]
-CLOSESPIDER_PAGECOUNT = 0 # Default: 0
-BOT_NAME              = 'quotes'
-ALLOWED_DOMAINS       = ['quotes.toscrape.com']                
-START_URLS            = ['https://quotes.toscrape.com/page/1/'] 
-SPIDER_MODULES        = ['quotes.spiders']
-NEWSPIDER_MODULE      = 'quotes.spiders'
-ROBOTSTXT_OBEY        = False
+CLOSESPIDER_ITEMCOUNT  = 0 # Default: 0
+CLOSESPIDER_TIMEOUT    = 0 # Default: 0 [sec]
+CLOSESPIDER_PAGECOUNT  = 0 # Default: 0
+BOT_NAME               = 'quotes'
+ALLOWED_DOMAINS        = ['quotes.toscrape.com']                
+START_URLS             = ['https://quotes.toscrape.com/page/1/'] 
+SPIDER_MODULES         = ['quotes.spiders']
+NEWSPIDER_MODULE       = 'quotes.spiders'
+JOBDIR                 = './crawls'
+CUSTOM_SPIDER_SETTINGS = {'JOBDIR': './crawls'}
 
 """ Configure a delay for requests for the same website """
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -36,9 +37,6 @@ LOG_FILE         = './logger.log'
 LOG_FORMAT       = '%(levelname)s: %(message)s'
 LOG_LEVEL        = logging.DEBUG
 COOKIES_ENABLED  = True # Disable cookies (enabled by default
-
-""" Request filter configuration """
-DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter' # Disable duplicate URL filter
 
 """ Item pipeline configuration"""
 # Configure item pipelines (See https://docs.scrapy.org/en/latest/topics/item-pipeline.html)

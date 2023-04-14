@@ -7,10 +7,10 @@ from scrapy.exceptions import NotConfigured
 from scrapy.http import Request, Response
 from stem.response.events import Event
 from stem import StreamStatus, Signal
+from scrapy import Spider, signals
 from scrapy.crawler import Crawler
-from .utils import Database
 from functools import partial
-from scrapy import Spider
+from .utils import Database
 from typing import Union
 from time import sleep
 from math import ceil
@@ -42,7 +42,7 @@ class IPSwitchMiddleware():
         self.nickname     = None
         self.locale       = None
 
-        # Trigger a stream event to gather the initial exit node's info
+        # Trigger a one-time stream event to gather the initial exit node's info
         requests.request(url = 'https://www.icanhazip.com', method = 'GET').text.strip('\n')
     
         return
@@ -139,7 +139,7 @@ class HeadersMiddleware():
 
 
     @classmethod
-    def from_crawler(cls, crawler):
+    def from_crawler(cls, crawler: Crawler):
         """ Instantiates class """
         
         if not crawler.settings.getbool("HEADER_GENERATOR_ENABLED"):
@@ -157,7 +157,7 @@ class HeadersMiddleware():
             )
     
 
-    def process_request(self, request, spider) -> None:
+    def process_request(self, request: Request, spider: Spider) -> None:
         """ Updates request headers if needed. """
 
         if request.meta['IPaddress'] != self.currentIP: # Time to update headers
@@ -192,7 +192,7 @@ class HeadersMiddleware():
 
 
     @staticmethod
-    def _toBytes(text:str, encoding: str = 'utf-8') -> bytearray:
+    def _toBytes(text: str, encoding: str = 'utf-8') -> bytearray:
         """ Strings to bytes converter. """
         return bytes(text, encoding)
 
@@ -204,12 +204,7 @@ class URLLoggerMiddleware():
         """ Initialisation method """
 
         self.null = 'N/A'
-
-        # Make database if it does not exist yet.
-        self.db   = Database(pathToFile = filePath)
-
-        if not os.path.isfile(filePath): 
-            self.db.make(schema, pragma)
+        self.db   = Database(filePath, schema, pragma)
         
         return
 
@@ -219,11 +214,22 @@ class URLLoggerMiddleware():
         """ Instantiates class. """
 
         if not crawler.settings.getbool("URL_LOG_ENABLED"): raise NotConfigured
-        return cls(
+
+        # Make class
+        c = cls(
             filePath = crawler.settings.get("URL_LOG_DB"),
             pragma   = crawler.settings.get("DB_PRAGMA"),
             schema   = crawler.settings.get("URL_LOG_SCHEMA")
         )
+
+        # Connect signals
+        crawler.signals.connect(c.db.spiderOpened, signal = signals.spider_opened)
+        crawler.signals.connect(c.db.spiderClosed, signal = signals.spider_closed)
+
+        return c
+    
+
+    def process_request(self, request: Request, spider: Spider) -> None: return
     
 
     def process_response(self, request: Request, response: Response, spider: Spider):
@@ -244,17 +250,13 @@ class URLLoggerMiddleware():
             request.meta.get('IPaddress',   self.null),
             request.meta.get('nickname',    self.null),
             request.meta.get('locale',      self.null),
-            request.headers.get('Referer', self.null).decode("utf-8"),
+            request.headers.get('Referer',  self.null).decode("utf-8"),
             request.headers.get('User-Agent', self.null).decode("utf-8"),
             request.meta.get('download_latency', self.null) # download latency
         )
         
-        self.db.connect()
-        self.db.cursor.execute(query, task)
-        self.db.close()
+        self.db.execute(query, task)
 
         return response
     
-
-    def process_request(self, request: Request, spider: Spider) -> None: return
-
+    
