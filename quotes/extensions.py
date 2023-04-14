@@ -43,14 +43,14 @@ class ProgressMonitor(metaclass = Singleton):
         """ Execute on spider_opened signal """
 
         self.startTime = dt.now()
-        print("{} | {} spider | Opened.".format(self._now(), spider.name))
+        print("{} | {} spider | Opened.".format(self._now(), spider.name.title()))
         return 
 
 
     def spiderClosed(self, spider: Spider):
         """ Execute on spider_closed signals """
 
-        print("\n{} | Spider - {} | Stopped.".format(self._now(), spider.name))
+        print("\n{} | {} spider | Stopped.".format(self._now(), spider.name.title()))
         return 
 
 
@@ -64,7 +64,7 @@ class ProgressMonitor(metaclass = Singleton):
             rate = self._scrapeRate()
             time = self._now()
             msg  = "{} | {} spider | Items scraped: {} ({:.2f} items/sec)"\
-                    .format(time, spider.name, self.itemCount, rate)
+                    .format(time, spider.name.title(), self.itemCount, rate)
             
             print(msg, end = '\r')
 

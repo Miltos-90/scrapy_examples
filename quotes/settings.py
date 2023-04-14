@@ -120,7 +120,6 @@ DB_PRAGMA = """
     PRAGMA synchronous=FULL;
     """
 
-
 DB_SCHEMA = """
     -- Quote data
     CREATE TABLE IF NOT EXISTS quotes (

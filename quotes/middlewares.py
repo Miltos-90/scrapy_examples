@@ -8,13 +8,14 @@ from scrapy.http import Request, Response
 from stem.response.events import Event
 from stem import StreamStatus, Signal
 from scrapy.crawler import Crawler
+from .utils import Database
 from functools import partial
-from typing import Union
-from quotes import URLDatabase
 from scrapy import Spider
+from typing import Union
 from time import sleep
 from math import ceil
 import requests
+import os
 
 
 class IPSwitchMiddleware():
@@ -171,6 +172,7 @@ class HeadersMiddleware():
             # Get referer set by the spider middlewares if exists
             if key == self.referer: 
                 value = request.headers.pop(key, self.headers[key])
+            
             request.headers[key] = value
         
         return
@@ -198,11 +200,16 @@ class HeadersMiddleware():
 class URLLoggerMiddleware():
     """ Middleware to log metadata for all succesful requests. """
 
-    def __init__(self) -> None:
+    def __init__(self, filePath: str, pragma: str, schema: str) -> None:
         """ Initialisation method """
 
-        self.db   = URLDatabase
         self.null = 'N/A'
+
+        # Make database if it does not exist yet.
+        self.db   = Database(pathToFile = filePath)
+
+        if not os.path.isfile(filePath): 
+            self.db.make(schema, pragma)
         
         return
 
@@ -212,7 +219,11 @@ class URLLoggerMiddleware():
         """ Instantiates class. """
 
         if not crawler.settings.getbool("URL_LOG_ENABLED"): raise NotConfigured
-        return cls()
+        return cls(
+            filePath = crawler.settings.get("URL_LOG_DB"),
+            pragma   = crawler.settings.get("DB_PRAGMA"),
+            schema   = crawler.settings.get("URL_LOG_SCHEMA")
+        )
     
 
     def process_response(self, request: Request, response: Response, spider: Spider):

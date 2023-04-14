@@ -65,6 +65,6 @@ To see first-hand the use of Tor with scrapy, make a new virtual environment, in
 ```
 python3 -m venv venv # create a virtual environment
 source venv/bin/activate # activate it
-pip install -U scrapy stem requests[socks] # install dependencies
-torify python ./main.py
+pip install -U brotli scrapy stem requests[socks] # install dependencies
+torify scrapy crawl <projectName>
 ```

@@ -16,6 +16,7 @@ class QuotesSpider(Spider):
     def parse(self, response: Response):
         """ Handler for the response downloaded for each of the requests made
         """
+        
         # Loop over all quotes
         for quoteDiv in response.xpath('//div[@class="quote"]'):
             

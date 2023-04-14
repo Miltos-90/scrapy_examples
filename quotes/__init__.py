@@ -3,7 +3,7 @@ from quotes.utils import LoggerFilter
 from logging import getLogger
 from scrapy.utils.log import configure_logging 
 from scrapy.utils.project import get_project_settings
-from quotes.databases import Database
+from quotes.utils import Database
 import os
 
 SETTINGS = get_project_settings()
@@ -22,11 +22,7 @@ getLogger('scrapy.core.scraper').addFilter(LoggerFilter())
 
 """ =================== DATABASE CONFIGURATION =================== """
 QuotesDatabase = Database(pathToFile = SETTINGS.get("DB"))
-URLDatabase    = Database(pathToFile= SETTINGS.get("URL_LOG_DB"))
 
 # If the databases do not exist, make them
 if not os.path.isfile(SETTINGS["DB"]): 
     QuotesDatabase.make(SETTINGS["DB_SCHEMA"], SETTINGS["DB_PRAGMA"])
-
-if not os.path.isfile(SETTINGS["URL_LOG_DB"]): 
-    URLDatabase.make(SETTINGS["URL_LOG_SCHEMA"], SETTINGS["DB_PRAGMA"])
