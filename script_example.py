@@ -11,7 +11,7 @@ def clean(paths: list):
 
 clean(paths = ['./logger.log', './scrapy_quotes.db', './url_logger.db', './crawls'])
 
-from quotes.spiders.quotes_spider import QuotesSpider
+from quotes.spiders.spider import QuotesSpider
 from scrapy.utils.project import get_project_settings
 from scrapy.crawler import CrawlerProcess
 

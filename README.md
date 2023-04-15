@@ -61,12 +61,18 @@ curl -x 127.0.0.1:8118 https://ifconfig.me
 
 If everything works as expected, the first IP (your current IP) should be different than the second and third one.
 
-## Scrapy
+### Running a scraper
 
-To use a scraper, make a new virtual environment, install all dependencies, and run:
+To use a scraper, make a new virtual environment, install all dependencies, and simply run it:
 ```
 python3 -m venv venv
 source venv/bin/activate
 pip install -U brotli scrapy stem random_header_generator requests[socks]
 torify scrapy crawl <projectName>
 ```
+
+## Available scrapers
+
+So far (this is always a work in progress) the following scrapers are fully functional:
+
+* quotes: https://quotes.toscrape.com/
