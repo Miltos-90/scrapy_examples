@@ -1,4 +1,6 @@
 import logging
+from utils.helpers import LoggerFilter
+from scrapy.utils.log import configure_logging 
 
 # Scrapy settings for quotes project
 #
@@ -33,10 +35,10 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 16 # maximum number of concurrent requests perf
 #CONCURRENT_REQUESTS = 32 # maximum concurrent requests performed by Scrapy (default: 16)
 
 """ Logger configuration """
-LOG_FILE         = './logger.log'
-LOG_FORMAT       = '%(levelname)s: %(message)s'
-LOG_LEVEL        = logging.DEBUG
-COOKIES_ENABLED  = True # Disable cookies (enabled by default
+LOG_FILE        = './logger.log'
+LOG_FORMAT      = '%(levelname)s: %(message)s'
+LOG_LEVEL       = logging.DEBUG
+COOKIES_ENABLED = True # Disable cookies (enabled by default
 
 """ Item pipeline configuration"""
 # Configure item pipelines (See https://docs.scrapy.org/en/latest/topics/item-pipeline.html)
@@ -53,9 +55,9 @@ SPIDER_MIDDLEWARES = {
 """ Downloader middleware configuration """
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'quotes.middlewares.IPSwitchMiddleware': 450,
-    'quotes.middlewares.HeadersMiddleware': 650,
-    'quotes.middlewares.URLLoggerMiddleware': 950
+    'utils.middlewares.IPSwitchMiddleware': 450,
+    'utils.middlewares.HeadersMiddleware': 650,
+    'utils.middlewares.URLLoggerMiddleware': 950
 }
 
 # Retrying failed requests status
@@ -66,9 +68,6 @@ RETRY_HTTP_CODES = [400, 500, 502, 503, 504, 522, 524, 408, 429]
 # Tor handler 
 TOR_ENABLED           = True
 IP_CHANGE_CODES       = RETRY_HTTP_CODES
-TOR_CONTROL_PORT      = 9051
-TOR_PASSWORD          = 'miltos'
-PRIVOXY_PROXY_ADDRESS = 'http://127.0.0.1:8118'
 IP_SETTLE_TIME        = 2 # Wait time for the new IP to "settle in"
 
 # Header generator - see random_header_generator package
@@ -83,28 +82,11 @@ USER_AGENTS              = 'program'
 # URL Logger
 URL_LOG_ENABLED = True
 URL_LOG_DB      = "./url_logger.db"
-URL_LOG_SCHEMA  = """
-    -- scraped pages schema
-    CREATE TABLE IF NOT EXISTS pages (
-            id            INTEGER PRIMARY KEY,
-            url           TEXT    NOT NULL,
-            date          TEXT    NOT NULL,
-            status_code   INTEGER NOT NULL,
-            fingerprint   TEXT,
-            IP_address    TEXT,
-            server_name   TEXT,
-            locale        TEXT,
-            referer       TEXT,
-            user_agent    TEXT,
-            down_latency  REAL
-        ) STRICT;
-"""
-
 
 """ Extensions configuration """
 # Enable or disable extensions and related settings (See https://docs.scrapy.org/en/latest/topics/extensions.html)
 EXTENSIONS = {
-    'quotes.extensions.ProgressMonitor': 0,
+    'utils.extensions.ProgressMonitor': 0,
 }
 
 PROGRESS_MONITOR_ENABLED = True
@@ -112,8 +94,9 @@ PROGRESS_MONITOR_STEP    = 10
 
 """ Database-related settings """
 DB   = "./scrapy_quotes.db"
+
 DB_PRAGMA = """
-    PRAGMA foreign_keys=ON;
+    PRAGMA foreign_keys=OFF;
     PRAGMA journal_mode=WAL;
     PRAGMA synchronous=FULL;
     """
@@ -143,8 +126,6 @@ DB_SCHEMA = """
 #TELNETCONSOLE_ENABLED = False
 
 
-
-
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
@@ -165,3 +146,9 @@ DB_SCHEMA = """
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+
+
+""" Apply logger configuration """
+configure_logging(settings = {"LOG_FILE": LOG_FILE, "LOG_FORMAT": LOG_FORMAT, "LOG_LEVEL": LOG_LEVEL})
+logging.getLogger('scrapy.core.scraper').addFilter(LoggerFilter())

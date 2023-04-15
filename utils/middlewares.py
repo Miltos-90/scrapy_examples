@@ -1,7 +1,5 @@
-from scrapy.downloadermiddlewares.defaultheaders import DefaultHeadersMiddleware
 from random_header_generator.definitions import COUNTRIES
 from random_header_generator import HeaderGenerator
-from scrapy.utils.python import without_none_values
 from stem.control import EventType, Controller
 from scrapy.exceptions import NotConfigured
 from scrapy.http import Request, Response
@@ -15,11 +13,15 @@ from typing import Union
 from time import sleep
 from math import ceil
 import requests
-import os
 
 
 class IPSwitchMiddleware():
     """ Middleware to change IP when requests start failing. """
+
+    # Default values for settings
+    PORT     = 9051
+    PASSWORD = 'miltos'
+    PROXY    = 'http://127.0.0.1:8118'
 
 
     def __init__(self, 
@@ -52,13 +54,15 @@ class IPSwitchMiddleware():
     def from_crawler(cls, crawler: Crawler):
         """ Instantiates class """
 
-        if not crawler.settings.getbool("TOR_ENABLED"): raise NotConfigured
+        if not crawler.settings.getbool("TOR_ENABLED", default = False): 
+            raise NotConfigured
         
-        return cls(port          = crawler.settings.get("TOR_CONTROL_PORT"), 
-                   password      = crawler.settings.get("TOR_PASSWORD"),
-                   IPSwitchCodes = crawler.settings.get("IP_CHANGE_CODES"), 
-                   proxyAddress  = crawler.settings.get("PRIVOXY_PROXY_ADDRESS"), 
-                   IPsettleTime  = crawler.settings.get("IP_SETTLE_TIME"), 
+        return cls(
+            port          = crawler.settings.get("TOR_CONTROL_PORT",  default = IPSwitchMiddleware.PORT),
+            password      = crawler.settings.get("TOR_PASSWORD",      default = IPSwitchMiddleware.PASSWORD),
+            proxyAddress  = crawler.settings.get("TOR_PROXY_ADDRESS", default = IPSwitchMiddleware.PROXY),
+            IPSwitchCodes = crawler.settings.get("IP_CHANGE_CODES"),
+            IPsettleTime  = crawler.settings.get("IP_SETTLE_TIME"),
         )
 
 
@@ -94,8 +98,8 @@ class IPSwitchMiddleware():
         return
     
         
-    def process_response(self, request: Request, response: Response, spider: Spider
-        ) -> Union[Request, Response]:
+    def process_response(self, 
+        request: Request, response: Response, spider: Spider) -> Union[Request, Response]:
         """ Renews IP depending on the response status """
         
         if response.status in self.IPCodes: # Force IP change
@@ -142,13 +146,14 @@ class HeadersMiddleware():
     def from_crawler(cls, crawler: Crawler):
         """ Instantiates class """
         
-        if not crawler.settings.getbool("HEADER_GENERATOR_ENABLED"): raise NotConfigured
+        if not crawler.settings.getbool("HEADER_GENERATOR_ENABLED", default = False): 
+            raise NotConfigured
     
         return cls(
-                user_agents = crawler.settings.get("USER_AGENTS"),
-                device      = crawler.settings.get("HEADER_DEVICE_TYPE"),
-                browser     = crawler.settings.get("HEADER_BROWSER_NAME"), 
-                httpVersion = crawler.settings.get("HEADER_HTTP_VERSION")
+            user_agents = crawler.settings.get("USER_AGENTS"),
+            device      = crawler.settings.get("HEADER_DEVICE_TYPE"),
+            browser     = crawler.settings.get("HEADER_BROWSER_NAME"), 
+            httpVersion = crawler.settings.get("HEADER_HTTP_VERSION")
             )
     
 
@@ -195,6 +200,32 @@ class HeadersMiddleware():
 class URLLoggerMiddleware():
     """ Middleware to log metadata for all succesful requests. """
 
+    # Default settings values
+    DB_FILE   = "./url_logger.db"
+
+    DB_SCHEMA = """
+        -- scraped pages schema
+        CREATE TABLE IF NOT EXISTS pages (
+            id           INTEGER PRIMARY KEY,
+            url          TEXT    NOT NULL,
+            date         TEXT    NOT NULL,
+            status_code  INTEGER NOT NULL,
+            fingerprint  TEXT,
+            IP_address   TEXT,
+            server_name  TEXT,
+            locale       TEXT,
+            referer      TEXT,
+            user_agent   TEXT,
+            down_latency REAL
+        ) STRICT;
+    """
+
+    DB_PRAGMA = """
+        PRAGMA foreign_keys=OFF;
+        PRAGMA journal_mode=WAL;
+        PRAGMA synchronous=FULL;
+    """
+
     def __init__(self, filePath: str, pragma: str, schema: str) -> None:
         """ Initialisation method """
 
@@ -212,9 +243,9 @@ class URLLoggerMiddleware():
 
         # Make class
         c = cls(
-            filePath = crawler.settings.get("URL_LOG_DB"),
-            pragma   = crawler.settings.get("DB_PRAGMA"),
-            schema   = crawler.settings.get("URL_LOG_SCHEMA")
+            filePath = crawler.settings.get("URL_LOG_DB",    default = URLLoggerMiddleware.DB_FILE),
+            pragma   = crawler.settings.get("URL_DB_PRAGMA", default = URLLoggerMiddleware.DB_PRAGMA),
+            schema   = crawler.settings.get("URL_DB_SCHEMA", default = URLLoggerMiddleware.DB_SCHEMA)
         )
 
         # Connect signals

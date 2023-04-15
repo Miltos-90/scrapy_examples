@@ -1,7 +1,8 @@
-from ..items import QuoteLoader, AuthorLoader
-from scrapy import Spider
 from scrapy.utils.project import get_project_settings
+from ..items import QuoteLoader, AuthorLoader
 from scrapy.http import Response
+from scrapy import Spider
+
 SETTINGS = get_project_settings()
 
 

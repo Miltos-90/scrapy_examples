@@ -1,8 +1,11 @@
 from scrapy import Spider, Item, signals
 from scrapy.exceptions import DropItem
 from scrapy.crawler import Crawler
-from .helpers import Database
 from typing import Tuple
+
+import sys
+sys.path.append('../utils')
+from utils.helpers import Database
 
 
 def isAuthor(item) -> bool: return "name" in item.keys()
