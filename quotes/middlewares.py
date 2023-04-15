@@ -10,7 +10,7 @@ from stem import StreamStatus, Signal
 from scrapy import Spider, signals
 from scrapy.crawler import Crawler
 from functools import partial
-from .utils import Database
+from .helpers import Database
 from typing import Union
 from time import sleep
 from math import ceil
@@ -142,18 +142,13 @@ class HeadersMiddleware():
     def from_crawler(cls, crawler: Crawler):
         """ Instantiates class """
         
-        if not crawler.settings.getbool("HEADER_GENERATOR_ENABLED"):
-            # Crawl with default headers -> return the DefaultHeadersMiddleware
-
-            headers = without_none_values(crawler.settings["DEFAULT_REQUEST_HEADERS"])
-            return DefaultHeadersMiddleware(headers.items())
+        if not crawler.settings.getbool("HEADER_GENERATOR_ENABLED"): raise NotConfigured
     
-        else: # Crawl with randomly generated headers
-            return cls(
+        return cls(
                 user_agents = crawler.settings.get("USER_AGENTS"),
                 device      = crawler.settings.get("HEADER_DEVICE_TYPE"),
                 browser     = crawler.settings.get("HEADER_BROWSER_NAME"), 
-                httpVersion = crawler.settings.get("HEADER_HTTP_VERSION"), 
+                httpVersion = crawler.settings.get("HEADER_HTTP_VERSION")
             )
     
 

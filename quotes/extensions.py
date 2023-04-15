@@ -1,15 +1,17 @@
 from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from datetime import datetime as dt
-from .utils import Singleton
+from .helpers import Singleton
 from scrapy.crawler import Crawler
 from scrapy import Spider, Item
 
 
 class ProgressMonitor(metaclass = Singleton):
+    """ Simple progress display of scraped item count"""
 
 
     def __init__(self, numSteps: int):
+        """ Initialisation method """
 
         self.numSteps  = numSteps      # Print every <numSteps> processed items
         self.itemCount = 0             # Counter for the number of items processed

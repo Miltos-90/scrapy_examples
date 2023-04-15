@@ -1,9 +1,8 @@
-from .utils import Database
 from scrapy import Spider, Item, signals
-from scrapy.crawler import Crawler
 from scrapy.exceptions import DropItem
+from scrapy.crawler import Crawler
+from .helpers import Database
 from typing import Tuple
-import os
 
 
 def isAuthor(item) -> bool: return "name" in item.keys()
@@ -43,7 +42,6 @@ class DefaultValuesPipeline():
         
         return item
     
-
 
 class SavePipeline():
     """ Saves item to the database """
