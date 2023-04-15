@@ -1,4 +1,4 @@
-from scrapy import Spider, signals
+from scrapy import Spider
 from logging import Filter
 from sqlite3 import connect
 from abc import ABCMeta
