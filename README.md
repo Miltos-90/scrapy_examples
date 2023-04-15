@@ -63,7 +63,7 @@ If everything works as expected, the first IP should be different than the secon
 
 ## Scrapy
 
-To see first-hand the use of Tor with scrapy, make a new virtual environment, install all dependencies, and run the main file:
+To use a scraper, make a new virtual environment, install all dependencies, and run:
 ```
 python3 -m venv venv # create a virtual environment
 source venv/bin/activate # activate it
