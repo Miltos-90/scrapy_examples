@@ -54,19 +54,19 @@ sudo service tor start
 
 Next, run the following commands
 ```
-curl http://ifconfig.me # get your current IP
-torify curl http://ifconfig.me # test Tor
-curl -x 127.0.0.1:8118 https://ifconfig.me # test privoxy
+curl http://ifconfig.me
+torify curl http://ifconfig.me
+curl -x 127.0.0.1:8118 https://ifconfig.me
 ```
 
-If everything works as expected, the first IP should be different than the second and third one.
+If everything works as expected, the first IP (your current IP) should be different than the second and third one.
 
 ## Scrapy
 
 To use a scraper, make a new virtual environment, install all dependencies, and run:
 ```
-python3 -m venv venv # create a virtual environment
-source venv/bin/activate # activate it
-pip install -U brotli scrapy stem random_header_generator requests[socks] # install dependencies
+python3 -m venv venv
+source venv/bin/activate
+pip install -U brotli scrapy stem random_header_generator requests[socks]
 torify scrapy crawl <projectName>
 ```
