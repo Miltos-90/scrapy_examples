@@ -9,11 +9,11 @@
 
 CLOSESPIDER_ITEMCOUNT   = 0 # Default: 0
 CLOSESPIDER_TIMEOUT     = 0 # Default: 0 [sec]
-CLOSESPIDER_PAGECOUNT   = 0 # Default: 0
+CLOSESPIDER_PAGECOUNT   = 4 # Default: 0
 BOT_NAME                = "slangdictionary"
 SPIDER_MODULES          = ["slangdictionary.spiders"]
 NEWSPIDER_MODULE        = "slangdictionary.spiders"
-ALLOWED_DOMAINS         = ['http://onlineslangdictionary.com/word-list/']                
+ALLOWED_DOMAINS         = ['onlineslangdictionary.com']                
 START_URLS              = ['http://onlineslangdictionary.com/word-list/0-a/'] 
 CUSTOM_SPIDER_SETTINGS  = {'JOBDIR': './crawls'}
 
@@ -22,7 +22,7 @@ CUSTOM_SPIDER_SETTINGS  = {'JOBDIR': './crawls'}
 #USER_AGENT = "slangdictionary (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -32,8 +32,7 @@ ROBOTSTXT_OBEY = True
 # See also autothrottle settings and docs
 #DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
-#CONCURRENT_REQUESTS_PER_DOMAIN = 16
-#CONCURRENT_REQUESTS_PER_IP = 16
+CONCURRENT_REQUESTS_PER_DOMAIN = 1
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False
