@@ -60,3 +60,9 @@ class SlangSpider(Spider):
         loader.add_xpath(field_name = 'author',   xpath = './/small[@class = "author"]/text()')
         loader.add_xpath(field_name = 'keywords', xpath = './/meta[@class = "keywords"]/@content')
         return loader.load_item()
+    
+
+    
+# this is the definition extractor. Could be shortened if scrapy supported xpath 2.0
+x = './/div[@class="definitions"]/ul/li/a/text()[normalize-space()]|.//div[@class="definitions"]/ul/li[not(a)]/text()[normalize-space()]'
+response.xpath(x).extract()
