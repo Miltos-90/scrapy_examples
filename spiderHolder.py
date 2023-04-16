@@ -1,6 +1,6 @@
 from scrapy.utils.project import get_project_settings
 from scrapy.http import Response
-from ..items import WordLoader
+from .slangdictionary.items import WordLoader
 from scrapy import Spider
 
 SETTINGS = get_project_settings()
@@ -13,11 +13,33 @@ class SlangSpider(Spider):
     allowed_domains = SETTINGS["ALLOWED_DOMAINS"]
     custom_settings = SETTINGS["CUSTOM_SPIDER_SETTINGS"]
 
+
     def parse(self, response: Response):
         """ Handler for the response downloaded for each of the requests made """
         
         # Scrape words
-        for word in response.xpath('.//table[@class="wordlist"]//@href'): 
+        for wordElement in response.xpath('.//table[@class="wordlist"]//@href'):
+
+            # Extract word
+            word  = response.xpath('.//div[@class="term featured"]//h2//a[contains(@href, "/meaning-definition")]/text()')
+
+            # Extract definitions (can be more than one)
+            
+            definitions = response.xpath('.//div[@class="definitions"]//ul//li[.//blockquote]/text()[normalize-space()]') # clean up -> str.isalpha()
+
+            if not definitions: # A blockquote does not appear in a few pages
+                definitions = response.xpath()
+
+            synonyms = response.xpath('.//div[@class="definitions"]//ul//li[.//blockquote]/a/@href') # clean up -> ['/meaning-definition-of/a-little-birdie-told-me']
+
+            # Make an item for each definition
+
+            # Definition points to another word's definitions. Go get those
+            # response meta = {'definition' : definition}
+
+
+
+
             yield self._parseItem(word)
 
         # Yield link to the next page
