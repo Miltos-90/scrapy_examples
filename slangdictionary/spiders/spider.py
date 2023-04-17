@@ -40,9 +40,13 @@ class SlangSpider(Spider):
 
 
         #loader = WordLoader(selector = response)
+
+        if response.url == 'http://onlineslangdictionary.com/meaning-definition-of/10-2-2-10':
+            inspect_response(response, self)
         
         # Extract word
-        wordSelector  = response.xpath('.//div[@class="term featured"]//h2//a[contains(@href, "/meaning-definition")]/text()')
+        word = response.xpath('.//div[contains(@class,"term")]//h2//a[contains(@href,"/meaning-definition")]/text()')
+        if not word: inspect_response(response, self)
 
         # Extract definitions. These can be one or more of the following two:
         # (I)  The concatenated text of li with the text of a that contains an href "/meaning-definition-of/..." inside it
@@ -55,27 +59,31 @@ class SlangSpider(Spider):
         .//div[@class="definitions"]/ul/li/a/text()[normalize-space()]
         )
         """
+        defs = response.xpath(xPathI)
 
         # Extract (II)
         xPathII = """
         .//div[@class="definitions"]/ul/li[not(a)]/text()[normalize-space()]
         """
         
-        defSelectors = response.xpath(xPathI)
-        defSelectors.extend(response.xpath(xPathII))
+        if not defs: # (I) was empty. Skip it
+            defs = response.xpath(xPathII)
+        else : # Merge (I) and (II)
+            defs.extend(response.xpath(xPathII))
+        
+        defs = [d for d in defs if d] # Skip None elements if exist
+        
+
+        if not defs: inspect_response(response, self)
         
         print(response.url)
-        print(f'scraping definition of: {wordSelector.extract()}')
-        if not defSelectors:
-            print(f'Definitions not found')
-        else:
-            for d in defSelectors:
-                print(f'Definition: {d.extract()}')
-
+        print(f'scraping definition of: {word.extract()}')
+        for d in defs:
+            print(f'Definition: {d.extract()}')
         print('---------------------------------------------------------------')
 
         
-        #inspect_response(response, self)
+        #
         # Make one item for each definition
 
         # Definition points to another word's definitions. Go get those
