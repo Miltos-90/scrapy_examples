@@ -41,37 +41,34 @@ class SlangSpider(Spider):
 
         #loader = WordLoader(selector = response)
 
-        if response.url == 'http://onlineslangdictionary.com/meaning-definition-of/10-2-2-10':
+        if response.url == 'http://onlineslangdictionary.com/meaning-definition-of/10-20':
             inspect_response(response, self)
         
         # Extract word
         word = response.xpath('.//div[contains(@class,"term")]//h2//a[contains(@href,"/meaning-definition")]/text()')
         if not word: inspect_response(response, self)
 
-        # Extract definitions. These can be one or more of the following two:
+        # Extract definitions. These can be a combination of two cases (each case can return multiple results):
         # (I)  The concatenated text of li with the text of a that contains an href "/meaning-definition-of/..." inside it
-        # (II) The text of li (only) if it does not contain a
-
-        # Extract (I)
         xPathI = """
         concat(
         .//div[@class="definitions"]/ul/li[a[contains(@href, "/meaning-definition-of/")]]/text()[normalize-space()],
         .//div[@class="definitions"]/ul/li/a/text()[normalize-space()]
         )
         """
-        defs = response.xpath(xPathI)
-
-        # Extract (II)
+        
+        # (II) The text of li (only) if it does not contain a
         xPathII = """
-        .//div[@class="definitions"]/ul/li[not(a)]/text()[normalize-space()]
+        string(.//div[@class="definitions"]/ul/li[not(a)]/text()[normalize-space()])
         """
         
-        if not defs: # (I) was empty. Skip it
-            defs = response.xpath(xPathII)
-        else : # Merge (I) and (II)
-            defs.extend(response.xpath(xPathII))
-        
+        defs = response.xpath(xPathI)
+        defs.extend(response.xpath(xPathII))
         defs = [d for d in defs if d] # Skip None elements if exist
+        # NOTE These elements need to be cleaned in the item pipeline.
+        # A possible result is the following (url): 
+        # (http://onlineslangdictionary.com/meaning-definition-of/10-south)
+        # ['When you are on your way down to your hands and knees on  the floor...sick.\r\n\r\n\r\n']
         
 
         if not defs: inspect_response(response, self)
