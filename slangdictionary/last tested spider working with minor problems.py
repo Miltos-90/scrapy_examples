@@ -16,7 +16,7 @@ class SlangSpider(Spider):
     custom_settings = SETTINGS["CUSTOM_SPIDER_SETTINGS"]
 
     
-    def parse(self, response: Response):
+    def aparse(self, response: Response):
         # Handler for the response downloaded for each of the requests made #
 
 
@@ -33,14 +33,14 @@ class SlangSpider(Spider):
         return
 
 
-    def _parseItem(self, response: Response):
+    def parse(self, response: Response):
         """ Parser for the item details """
         # TODO: Fix the below
         # TODO: Deal with nested link http://onlineslangdictionary.com/meaning-definition-of/5-by-5
 
 
         #loader = WordLoader(selector = response)
-        #inspect_response(response, self)
+        inspect_response(response, self)
         
         # Extract word
         word = response.xpath('.//div[contains(@class,"term")]//h2//a[contains(@href,"/meaning-definition")]/text()')
@@ -54,38 +54,65 @@ class SlangSpider(Spider):
             lineBreakExists  = int(dLink.xpath('boolean(.//br)').extract_first())
 
             if blockQuoteExists and lineBreakExists:
-                dLink.xpath("""
+                d = dLink.xpath("""
                     ./blockquote[1]//preceding-sibling::text()
                     [
                         following-sibling::br[not(preceding-sibling::br)] 
                             or 
                         not(../br)
                     ][normalize-space()]
+                    |
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
                     """)
             
             elif blockQuoteExists: # and not lineBreakExists
-                
                 d = dLink.xpath("""
                     ./blockquote[1]/preceding-sibling::text()
                     |
-                    ./blockquote[1]/preceding-sibling::*//text()
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
                     """)
-                
+            
             elif lineBreakExists: # and not blockQuoteExists
 
                 d = dLink.xpath("""
-                    ./br[1]//preceding-sibling::text()[normalize-space()]
+                    ./br[1]/preceding-sibling::text()[normalize-space()]
+                    |
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
                     """)
-            
-                defs.append(d)
-
             else: # no blockQuoteExists and no lineBreakExists
 
-                dLink.xpath("""
-                    .//text()[normalize-space()]
+                d = dLink.xpath("""
+                    ./text()[normalize-space()]
+                    |
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
                 """)
                 
-            
+            defs.append(d)
+
         # NOTE These elements need to be cleaned in the item pipeline.
         # A possible result is the following (url): 
         # (http://onlineslangdictionary.com/meaning-definition-of/10-south)
