@@ -15,9 +15,9 @@ class SlangSpider(Spider):
     allowed_domains = SETTINGS["ALLOWED_DOMAINS"]
     custom_settings = SETTINGS["CUSTOM_SPIDER_SETTINGS"]
 
-
+    
     def parse(self, response: Response):
-        """ Handler for the response downloaded for each of the requests made """
+        # Handler for the response downloaded for each of the requests made #
 
 
         # Yield all links to the individual word pages
@@ -40,43 +40,93 @@ class SlangSpider(Spider):
 
 
         #loader = WordLoader(selector = response)
-
-        if response.url == 'http://onlineslangdictionary.com/meaning-definition-of/10-20':
-            inspect_response(response, self)
+        #inspect_response(response, self)
         
         # Extract word
         word = response.xpath('.//div[contains(@class,"term")]//h2//a[contains(@href,"/meaning-definition")]/text()')
         if not word: inspect_response(response, self)
 
-        # Extract definitions. These can be a combination of two cases (each case can return multiple results):
-        # (I)  The concatenated text of li with the text of a that contains an href "/meaning-definition-of/..." inside it
-        xPathI = """
-        concat(
-        .//div[@class="definitions"]/ul/li[a[contains(@href, "/meaning-definition-of/")]]/text()[normalize-space()],
-        .//div[@class="definitions"]/ul/li/a/text()[normalize-space()]
-        )
-        """
-        
-        # (II) The text of li (only) if it does not contain a
-        xPathII = """
-        string(.//div[@class="definitions"]/ul/li[not(a)]/text()[normalize-space()])
-        """
-        
-        defs = response.xpath(xPathI)
-        defs.extend(response.xpath(xPathII))
-        defs = [d for d in defs if d] # Skip None elements if exist
+        # Extract definitions.
+        defs = []
+        for dLink in response.xpath('.//div[@class="definitions"]/ul/li'): 
+
+            blockQuoteExists = int(dLink.xpath('boolean(.//blockquote)').extract_first())
+            lineBreakExists  = int(dLink.xpath('boolean(.//br)').extract_first())
+
+            if blockQuoteExists and lineBreakExists:
+                d = dLink.xpath("""
+                    ./blockquote[1]/preceding-sibling::text()
+                    [
+                        following-sibling::br[not(preceding-sibling::br)] 
+                            or 
+                        not(../br)
+                    ][normalize-space()]
+                    |
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
+                    """)
+            
+            elif blockQuoteExists: # and not lineBreakExists
+                d = dLink.xpath("""
+                    ./blockquote[1]/preceding-sibling::text()
+                    |
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
+                    """)
+            
+            elif lineBreakExists: # and not blockQuoteExists
+
+                d = dLink.xpath("""
+                    ./br[1]/preceding-sibling::text()[normalize-space()]
+                    |
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
+                    """)
+            else: # no blockQuoteExists and no lineBreakExists
+
+                d = dLink.xpath("""
+                    ./text()[normalize-space()]
+                    |
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
+                """)
+                
+            defs.append(d)
+
         # NOTE These elements need to be cleaned in the item pipeline.
         # A possible result is the following (url): 
         # (http://onlineslangdictionary.com/meaning-definition-of/10-south)
         # ['When you are on your way down to your hands and knees on  the floor...sick.\r\n\r\n\r\n']
-        
 
-        if not defs: inspect_response(response, self)
+        #if not defs: inspect_response(response, self)
         
         print(response.url)
         print(f'scraping definition of: {word.extract()}')
         for d in defs:
-            print(f'Definition: {d.extract()}')
+            if d:
+                print(f'Definition: {d.extract()}')
+            else:
+                print(f'Definition: ')
         print('---------------------------------------------------------------')
 
         
@@ -88,4 +138,3 @@ class SlangSpider(Spider):
 
 
         return #loader.load_item()
-    

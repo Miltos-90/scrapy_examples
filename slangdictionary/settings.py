@@ -9,7 +9,7 @@
 
 CLOSESPIDER_ITEMCOUNT   = 0 # Default: 0
 CLOSESPIDER_TIMEOUT     = 0 # Default: 0 [sec]
-CLOSESPIDER_PAGECOUNT   = 4 # Default: 0
+CLOSESPIDER_PAGECOUNT   = 80 # Default: 0
 BOT_NAME                = "slangdictionary"
 SPIDER_MODULES          = ["slangdictionary.spiders"]
 NEWSPIDER_MODULE        = "slangdictionary.spiders"
