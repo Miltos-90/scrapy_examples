@@ -9,12 +9,13 @@
 
 CLOSESPIDER_ITEMCOUNT   = 0 # Default: 0
 CLOSESPIDER_TIMEOUT     = 0 # Default: 0 [sec]
-CLOSESPIDER_PAGECOUNT   = 150 # Default: 0
+CLOSESPIDER_PAGECOUNT   = 250 # Default: 0
 BOT_NAME                = "slangdictionary"
 SPIDER_MODULES          = ["slangdictionary.spiders"]
 NEWSPIDER_MODULE        = "slangdictionary.spiders"
 ALLOWED_DOMAINS         = ['onlineslangdictionary.com']                
-START_URLS              = ['http://onlineslangdictionary.com/word-list/0-a/']
+START_URLS              = ['http://onlineslangdictionary.com/meaning-definition-of/as-useless-as-tits-on-a-boar-hog']
+# ['http://onlineslangdictionary.com/word-list/0-a/']
 # ['http://onlineslangdictionary.com/meaning-definition-of/10%253a30'] 
 # [http://onlineslangdictionary.com/meaning-definition-of/asshole]
 # ['http://onlineslangdictionary.com/meaning-definition-of/1080']
@@ -36,7 +37,7 @@ ROBOTSTXT_OBEY = False
 # See also autothrottle settings and docs
 #DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
-CONCURRENT_REQUESTS_PER_DOMAIN = 1
+CONCURRENT_REQUESTS_PER_DOMAIN = 16
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False

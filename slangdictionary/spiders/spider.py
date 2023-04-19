@@ -16,7 +16,7 @@ class SlangSpider(Spider):
     custom_settings = SETTINGS["CUSTOM_SPIDER_SETTINGS"]
 
     
-    def parse(self, response: Response):
+    def paarse(self, response: Response):
         # Handler for the response downloaded for each of the requests made #
 
 
@@ -33,7 +33,7 @@ class SlangSpider(Spider):
         return
 
 
-    def _parseItem(self, response: Response):
+    def parse(self, response: Response):
         """ Parser for the item details """
         # TODO: Fix the below
         # TODO: Deal with nested link http://onlineslangdictionary.com/meaning-definition-of/5-by-5
@@ -52,34 +52,19 @@ class SlangSpider(Spider):
             blockQuoteExists = int(dLink.xpath('boolean(.//blockquote)').extract_first())
             lineBreakExists  = int(dLink.xpath('boolean(.//br)').extract_first())
 
-            #int(dLink.xpath('boolean(.//blockquote)').extract_first())
-            #int(dLink.xpath('boolean(.//br)').extract_first())
-
-            #int(dLink.xpath('boolean(./blockquote[contains(/,br)])').extract_first())
-            #int(dLink.xpath('boolean(./br[contains(/,a)])').extract_first())
-
             if blockQuoteExists and lineBreakExists:
                 
-                #inspect_response(response, self)
-                
-                #d = dLink.xpath("""
-                #    ./blockquote[1]//preceding-sibling::text()
-                #    [
-                #        following-sibling::br[not(preceding-sibling::br)] 
-                #            or 
-                #        not(../br)
-                #    ][normalize-space()]
-                #    """).extract()
-                
                 d = dLink.xpath("""
-                    ./blockquote[1]/preceding-sibling::text()[normalize-space()]
-                    |
-                    ./blockquote[1]/preceding-sibling::*//text()[normalize-space()]
+                    ./blockquote[1]//preceding-sibling::text()
+                    [
+                        following-sibling::br[not(preceding-sibling::br)] 
+                    ][normalize-space()]
                     """)
-                # The above gives wrong results here: http://onlineslangdictionary.com/meaning-definition-of/10-20
-                
-                defs.append(d)
+
+                # WILL NOT EXTRACT HREF text (or italics, bold etc)
             
+                inspect_response(response, self) 
+
             elif blockQuoteExists: # and not lineBreakExists
                 
                 d = dLink.xpath("""
@@ -102,23 +87,11 @@ class SlangSpider(Spider):
                     .//text()[normalize-space()]
                 """)
                 
-            
+            defs.append(d)
         # NOTE These elements need to be cleaned in the item pipeline.
         # A possible result is the following (url): 
         # (http://onlineslangdictionary.com/meaning-definition-of/10-south)
         # ['When you are on your way down to your hands and knees on  the floor...sick.\r\n\r\n\r\n']
-
-        #if not defs: inspect_response(response, self)
-        
-        print(response.url)
-        print(f'scraping definition of: {word.extract()}')
-        for d in defs:
-            if d:
-                print(f'Definition: {d.extract()}')
-            else:
-                print(f'Definition: ')
-        print('---------------------------------------------------------------')
-
         
         #
         # Make one item for each definition
@@ -126,5 +99,13 @@ class SlangSpider(Spider):
         # Definition points to another word's definitions. Go get those
         # response meta = {'definition' : definition}
 
+        #print(response.url)
+        #print(f'scraping definition of: {word.extract()}')
+        #for d in defs:
+        #    if d:
+        #        print(f'Definition: {d.extract()}')
+        #    else:
+        #        print(f'Definition: ')
+        print('---------------------------------------------------------------')
 
         return #loader.load_item()
