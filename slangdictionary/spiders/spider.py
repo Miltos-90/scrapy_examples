@@ -38,7 +38,6 @@ class SlangSpider(Spider):
         # TODO: Fix the below
         # TODO: Deal with nested link http://onlineslangdictionary.com/meaning-definition-of/5-by-5
 
-
         #loader = WordLoader(selector = response)
         #inspect_response(response, self)
         
@@ -53,35 +52,53 @@ class SlangSpider(Spider):
             blockQuoteExists = int(dLink.xpath('boolean(.//blockquote)').extract_first())
             lineBreakExists  = int(dLink.xpath('boolean(.//br)').extract_first())
 
+            #int(dLink.xpath('boolean(.//blockquote)').extract_first())
+            #int(dLink.xpath('boolean(.//br)').extract_first())
+
+            #int(dLink.xpath('boolean(./blockquote[contains(/,br)])').extract_first())
+            #int(dLink.xpath('boolean(./br[contains(/,a)])').extract_first())
+
             if blockQuoteExists and lineBreakExists:
-                dLink.xpath("""
-                    ./blockquote[1]//preceding-sibling::text()
-                    [
-                        following-sibling::br[not(preceding-sibling::br)] 
-                            or 
-                        not(../br)
-                    ][normalize-space()]
+                
+                #inspect_response(response, self)
+                
+                #d = dLink.xpath("""
+                #    ./blockquote[1]//preceding-sibling::text()
+                #    [
+                #        following-sibling::br[not(preceding-sibling::br)] 
+                #            or 
+                #        not(../br)
+                #    ][normalize-space()]
+                #    """).extract()
+                
+                d = dLink.xpath("""
+                    ./blockquote[1]/preceding-sibling::text()[normalize-space()]
+                    |
+                    ./blockquote[1]/preceding-sibling::*//text()[normalize-space()]
                     """)
+                # The above gives wrong results here: http://onlineslangdictionary.com/meaning-definition-of/10-20
+                
+                defs.append(d)
             
             elif blockQuoteExists: # and not lineBreakExists
                 
                 d = dLink.xpath("""
-                    ./blockquote[1]/preceding-sibling::text()
+                    ./blockquote[1]/preceding-sibling::text()[normalize-space()]
                     |
-                    ./blockquote[1]/preceding-sibling::*//text()
+                    ./blockquote[1]/preceding-sibling::*//text()[normalize-space()]
                     """)
                 
             elif lineBreakExists: # and not blockQuoteExists
 
                 d = dLink.xpath("""
-                    ./br[1]//preceding-sibling::text()[normalize-space()]
+                    ./br[1]/preceding-sibling::text()[normalize-space()]
+                    |
+                    ./br[1]/preceding-sibling::*//text()[normalize-space()]
                     """)
-            
-                defs.append(d)
 
             else: # no blockQuoteExists and no lineBreakExists
 
-                dLink.xpath("""
+                d = dLink.xpath("""
                     .//text()[normalize-space()]
                 """)
                 

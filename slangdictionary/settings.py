@@ -9,13 +9,17 @@
 
 CLOSESPIDER_ITEMCOUNT   = 0 # Default: 0
 CLOSESPIDER_TIMEOUT     = 0 # Default: 0 [sec]
-CLOSESPIDER_PAGECOUNT   = 130 # Default: 0
+CLOSESPIDER_PAGECOUNT   = 150 # Default: 0
 BOT_NAME                = "slangdictionary"
 SPIDER_MODULES          = ["slangdictionary.spiders"]
 NEWSPIDER_MODULE        = "slangdictionary.spiders"
 ALLOWED_DOMAINS         = ['onlineslangdictionary.com']                
-START_URLS              = ['http://onlineslangdictionary.com/word-list/0-a/']#['http://onlineslangdictionary.com/meaning-definition-of/10%253a30'] # http://onlineslangdictionary.com/meaning-definition-of/asshole
+START_URLS              = ['http://onlineslangdictionary.com/word-list/0-a/']
+# ['http://onlineslangdictionary.com/meaning-definition-of/10%253a30'] 
+# [http://onlineslangdictionary.com/meaning-definition-of/asshole]
+# ['http://onlineslangdictionary.com/meaning-definition-of/1080']
 CUSTOM_SPIDER_SETTINGS  = {'JOBDIR': './crawls'}
+
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
