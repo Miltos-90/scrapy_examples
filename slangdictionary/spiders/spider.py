@@ -55,11 +55,11 @@ class SlangSpider(Spider):
             if blockQuoteExists and lineBreakExists:
                 
                 d = dLink.xpath("""
-                    ./blockquote[1]//preceding-sibling::text()
+                    ./blockquote[1]/preceding-sibling::text()
                     [
                         following-sibling::br[not(preceding-sibling::br)] 
                     ][normalize-space()]
-                    """)
+                    """).extract()
 
                 # WILL NOT EXTRACT HREF text (or italics, bold etc)
             
