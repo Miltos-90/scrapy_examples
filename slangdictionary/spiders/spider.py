@@ -16,7 +16,7 @@ class SlangSpider(Spider):
     custom_settings = SETTINGS["CUSTOM_SPIDER_SETTINGS"]
 
     
-    def paarse(self, response: Response):
+    def parse(self, response: Response):
         # Handler for the response downloaded for each of the requests made #
 
 
@@ -33,61 +33,64 @@ class SlangSpider(Spider):
         return
 
 
-    def parse(self, response: Response):
+    def _parseItem(self, response: Response):
         """ Parser for the item details """
         # TODO: Fix the below
         # TODO: Deal with nested link http://onlineslangdictionary.com/meaning-definition-of/5-by-5
 
         #loader = WordLoader(selector = response)
-        #inspect_response(response, self)
         
         # Extract word
         word = response.xpath('.//div[contains(@class,"term")]//h2//a[contains(@href,"/meaning-definition")]/text()')
         if not word: inspect_response(response, self)
 
+        #inspect_response(response, self)
+
         # Extract definitions.
         defs = []
-        for dLink in response.xpath('.//div[@class="definitions"]/ul/li'): 
+        for dLink in response.xpath('//div[@class="definitions"]/ul/li'): 
 
-            blockQuoteExists = int(dLink.xpath('boolean(.//blockquote)').extract_first())
-            lineBreakExists  = int(dLink.xpath('boolean(.//br)').extract_first())
-
-            if blockQuoteExists and lineBreakExists:
-                
-                d = dLink.xpath("""
-                    ./blockquote[1]/preceding-sibling::text()
-                    [
-                        following-sibling::br[not(preceding-sibling::br)] 
-                    ][normalize-space()]
-                    """).extract()
-
-                # WILL NOT EXTRACT HREF text (or italics, bold etc)
+            blockQuoteExists     = bool(int(dLink.xpath('boolean(.//blockquote)').extract_first()))
+            lineBreakExists      = bool(int(dLink.xpath('boolean(.//br)').extract_first()))
+            blockBeforelineBreak = bool(int(dLink.xpath('boolean(.//blockquote[1]/following::br)').extract_first()))
             
-                inspect_response(response, self) 
+            if blockQuoteExists and blockBeforelineBreak:
 
-            elif blockQuoteExists: # and not lineBreakExists
-                
+                #d = dLink.xpath("""
+                #    ./blockquote[1]/preceding-sibling::text()
+                #    [
+                #        following-sibling::br[not(preceding-sibling::br)] 
+                #    ][normalize-space()]
+                #    """).extract()
+
                 d = dLink.xpath("""
                     ./blockquote[1]/preceding-sibling::text()[normalize-space()]
                     |
                     ./blockquote[1]/preceding-sibling::*//text()[normalize-space()]
                     """)
-                
-            elif lineBreakExists: # and not blockQuoteExists
 
+                #print(f'{word.extract()}: {d.extract()}')
+
+            elif (blockQuoteExists and not blockBeforelineBreak) or lineBreakExists:
+                
                 d = dLink.xpath("""
                     ./br[1]/preceding-sibling::text()[normalize-space()]
                     |
                     ./br[1]/preceding-sibling::*//text()[normalize-space()]
-                    """)
+                """)
 
             else: # no blockQuoteExists and no lineBreakExists
 
+                # IF UL EXISTS! maybe get the any element following li but is not descendant?
                 d = dLink.xpath("""
-                    .//text()[normalize-space()]
+                ./ul[1]/preceding-sibling::text()
+                |
+                ./ul[1]/preceding-sibling::*//text()
                 """)
-                
+
             defs.append(d)
+                
+            
         # NOTE These elements need to be cleaned in the item pipeline.
         # A possible result is the following (url): 
         # (http://onlineslangdictionary.com/meaning-definition-of/10-south)
@@ -99,13 +102,16 @@ class SlangSpider(Spider):
         # Definition points to another word's definitions. Go get those
         # response meta = {'definition' : definition}
 
-        #print(response.url)
-        #print(f'scraping definition of: {word.extract()}')
-        #for d in defs:
-        #    if d:
-        #        print(f'Definition: {d.extract()}')
-        #    else:
-        #        print(f'Definition: ')
+       
+        print(response.url)
+        print(f'scraping definition of: {word.extract()}')
+        
+        for d in defs:
+            if d:
+                print(f'Definition: {d.extract()}')
+            else:
+                print(f'Definition: ')
         print('---------------------------------------------------------------')
+        
 
         return #loader.load_item()
