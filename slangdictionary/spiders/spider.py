@@ -42,26 +42,24 @@ class SlangSpider(Spider):
         
         # Extract word
         word = response.xpath('.//div[contains(@class,"term")]//h2//a[contains(@href,"/meaning-definition")]/text()')
-        if not word: inspect_response(response, self)
-
-        #inspect_response(response, self)
 
         # Extract definitions.
         defs = []
-        for dLink in response.xpath('//div[@class="definitions"]/ul/li'): 
+        for dLink in response.xpath('//div[@class="definitions"]/ul/li'):
+            #inspect_response(response, self)
 
-            blockQuoteExists     = bool(int(dLink.xpath('boolean(.//blockquote)').extract_first()))
-            lineBreakExists      = bool(int(dLink.xpath('boolean(.//br)').extract_first()))
-            blockBeforelineBreak = bool(int(dLink.xpath('boolean(.//blockquote[1]/following::br)').extract_first()))
+            blockQuoteExists     = bool(int(dLink.xpath('boolean(./blockquote)').extract_first()))
+            lineBreakExists      = bool(int(dLink.xpath('boolean(./br)').extract_first()))
             
-            if blockQuoteExists and blockBeforelineBreak:
-
-                #d = dLink.xpath("""
-                #    ./blockquote[1]/preceding-sibling::text()
-                #    [
-                #        following-sibling::br[not(preceding-sibling::br)] 
-                #    ][normalize-space()]
-                #    """).extract()
+            if lineBreakExists:
+                
+                d = dLink.xpath("""
+                    ./br[1]/preceding-sibling::text()[normalize-space()]
+                    |
+                    ./br[1]/preceding-sibling::*//text()[normalize-space()]
+                """)
+            
+            elif blockQuoteExists:
 
                 d = dLink.xpath("""
                     ./blockquote[1]/preceding-sibling::text()[normalize-space()]
@@ -69,39 +67,32 @@ class SlangSpider(Spider):
                     ./blockquote[1]/preceding-sibling::*//text()[normalize-space()]
                     """)
 
-                #print(f'{word.extract()}: {d.extract()}')
-
-            elif (blockQuoteExists and not blockBeforelineBreak) or lineBreakExists:
-                
-                d = dLink.xpath("""
-                    ./br[1]/preceding-sibling::text()[normalize-space()]
-                    |
-                    ./br[1]/preceding-sibling::*//text()[normalize-space()]
-                """)
-
             else: # no blockQuoteExists and no lineBreakExists
 
-                # IF UL EXISTS! maybe get the any element following li but is not descendant?
                 d = dLink.xpath("""
-                ./ul[1]/preceding-sibling::text()
-                |
-                ./ul[1]/preceding-sibling::*//text()
+                    ./text()[normalize-space()]
+                    |
+                    ./a//text()[normalize-space()]
+                    |
+                    ./b/text()[normalize-space()]
+                    |
+                    ./i/text()[normalize-space()]
+                    |
+                    ./em/text()[normalize-space()]
                 """)
 
             defs.append(d)
-                
             
-        # NOTE These elements need to be cleaned in the item pipeline.
+        # NOTE These elements need to be cleaned in the item pipeline, or dropped if empty
         # A possible result is the following (url): 
         # (http://onlineslangdictionary.com/meaning-definition-of/10-south)
         # ['When you are on your way down to your hands and knees on  the floor...sick.\r\n\r\n\r\n']
-        
-        #
-        # Make one item for each definition
+        # (http://onlineslangdictionary.com/meaning-definition-of/amazon) results in one empty definition (see origin)
 
+
+        # Make one item for each definition
         # Definition points to another word's definitions. Go get those
         # response meta = {'definition' : definition}
-
        
         print(response.url)
         print(f'scraping definition of: {word.extract()}')
@@ -112,6 +103,5 @@ class SlangSpider(Spider):
             else:
                 print(f'Definition: ')
         print('---------------------------------------------------------------')
-        
 
         return #loader.load_item()

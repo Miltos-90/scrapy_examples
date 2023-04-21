@@ -25,8 +25,6 @@ START_URLS              = ['http://onlineslangdictionary.com/word-list/0-a/']
 # ['http://onlineslangdictionary.com/meaning-definition-of/1080']
 CUSTOM_SPIDER_SETTINGS  = {'JOBDIR': './crawls'}
 
-
-
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "slangdictionary (+http://www.yourdomain.com)"
 
