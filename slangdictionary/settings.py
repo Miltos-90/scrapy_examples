@@ -9,12 +9,12 @@
 
 CLOSESPIDER_ITEMCOUNT   = 0 # Default: 0
 CLOSESPIDER_TIMEOUT     = 0 # Default: 0 [sec]
-CLOSESPIDER_PAGECOUNT   = 350 # Default: 0
+CLOSESPIDER_PAGECOUNT   = 150 # Default: 0
 BOT_NAME                = "slangdictionary"
 SPIDER_MODULES          = ["slangdictionary.spiders"]
 NEWSPIDER_MODULE        = "slangdictionary.spiders"
 ALLOWED_DOMAINS         = ['onlineslangdictionary.com']                
-START_URLS              = ['http://onlineslangdictionary.com/word-list/0-a/']
+START_URLS              = ['http://onlineslangdictionary.com/meaning-definition-of/5-by-5']
 
 # ['http://onlineslangdictionary.com/meaning-definition-of/3rd-base']
 # ['http://onlineslangdictionary.com/word-list/0-a/']

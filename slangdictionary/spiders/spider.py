@@ -2,6 +2,7 @@ from scrapy.utils.project import get_project_settings
 from scrapy.http import Response
 #from .slangdictionary.items import WordLoader
 from scrapy import Spider
+from scrapy.selector import Selector
 
 from scrapy.shell import inspect_response
 
@@ -33,56 +34,28 @@ class SlangSpider(Spider):
         return
 
 
-    def _parseItem(self, response: Response):
+    def parse(self, response: Response):
         """ Parser for the item details """
-        # TODO: Fix the below
-        # TODO: Deal with nested link http://onlineslangdictionary.com/meaning-definition-of/5-by-5
 
         #loader = WordLoader(selector = response)
+        inspect_response(response, self)
         
         # Extract word
         word = response.xpath('.//div[contains(@class,"term")]//h2//a[contains(@href,"/meaning-definition")]/text()')
 
         # Extract definitions.
-        defs = []
-        for dLink in response.xpath('//div[@class="definitions"]/ul/li'):
-            #inspect_response(response, self)
+        defs = [self._getDefinition(dLink) for dLink in response.xpath('//div[@class="definitions"]/ul/li')]
 
-            blockQuoteExists     = bool(int(dLink.xpath('boolean(./blockquote)').extract_first()))
-            lineBreakExists      = bool(int(dLink.xpath('boolean(./br)').extract_first()))
-            
-            if lineBreakExists:
-                
-                d = dLink.xpath("""
-                    ./br[1]/preceding-sibling::text()[normalize-space()]
-                    |
-                    ./br[1]/preceding-sibling::*//text()[normalize-space()]
-                """)
-            
-            elif blockQuoteExists:
+        # Extract commonality/usage statistics
+        usageXpath = lambda text: f".//*[contains(text(),'{text}')]/parent::*/following-sibling::*[1]//span/span/text()"
+        response.xpath(usageXpath('I use it')).extract()
+        response.xpath(usageXpath('No longer use it')).extract()
+        response.xpath(usageXpath('Heard it but never used it')).extract()
+        response.xpath(usageXpath('Have never heard it')).extract()
 
-                d = dLink.xpath("""
-                    ./blockquote[1]/preceding-sibling::text()[normalize-space()]
-                    |
-                    ./blockquote[1]/preceding-sibling::*//text()[normalize-space()]
-                    """)
+        # Extract vulgarity
 
-            else: # no blockQuoteExists and no lineBreakExists
-
-                d = dLink.xpath("""
-                    ./text()[normalize-space()]
-                    |
-                    ./a//text()[normalize-space()]
-                    |
-                    ./b/text()[normalize-space()]
-                    |
-                    ./i/text()[normalize-space()]
-                    |
-                    ./em/text()[normalize-space()]
-                """)
-
-            defs.append(d)
-            
+        
         # NOTE These elements need to be cleaned in the item pipeline, or dropped if empty
         # A possible result is the following (url): 
         # (http://onlineslangdictionary.com/meaning-definition-of/10-south)
@@ -93,15 +66,55 @@ class SlangSpider(Spider):
         # Make one item for each definition
         # Definition points to another word's definitions. Go get those
         # response meta = {'definition' : definition}
-       
+
+        #"""
         print(response.url)
         print(f'scraping definition of: {word.extract()}')
-        
         for d in defs:
-            if d:
-                print(f'Definition: {d.extract()}')
-            else:
-                print(f'Definition: ')
+            if d: print(f'Definition: {d.extract()}')
+            else: print(f'Definition: ')
         print('---------------------------------------------------------------')
-
+        #"""
+       
         return #loader.load_item()
+
+    
+    def _getDefinition(self, selector: Selector) -> Selector:
+        """ Extracts the text from a definition, discarding examples and on occasion superfluous sentences. """
+
+        def xpathA(tag: str) -> str:
+            """ Generates the appropriate xpath to grab the definition in the presence of 
+                a blockquote or a linebreak tag.
+            """
+
+            # If xpath 2.0 was supported, this would have been more compact
+            xp = f"""
+                ./{tag}[1]/preceding-sibling::text()[normalize-space()]
+                |
+                ./{tag}[1]/preceding-sibling::*//text()[normalize-space()]
+                """
+            
+            return xp
+        
+        def xpathB() -> str:
+            """ Generates the appropriate xpath to grab the definition in the absence of 
+                a blockquote or a linebreak tag.
+            """
+
+            # If xpath 2.0 was supported, this would have been more compact
+            xp = """
+                ./text()[normalize-space()]    | ./a//text()[normalize-space()] |
+                ./b//text()[normalize-space()] | ./i//text()[normalize-space()] |
+                ./em//text()[normalize-space()]
+                """
+            
+            return xp
+
+        hasBlockquote = bool(int(selector.xpath('boolean(./blockquote)').extract_first()))
+        haslineBreak  = bool(int(selector.xpath('boolean(./br)').extract_first()))
+        
+        if haslineBreak    : d = selector.xpath(xpathA('br'))
+        elif hasBlockquote : d = selector.xpath(xpathA('blockquote'))
+        else               : d = selector.xpath(xpathB())
+
+        return d
