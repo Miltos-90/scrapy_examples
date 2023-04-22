@@ -10,6 +10,7 @@ from scrapy.crawler import Crawler
 from functools import partial
 from .helpers import Database
 from typing import Union
+from . import  constants
 from time import sleep
 from math import ceil
 import requests
@@ -17,12 +18,6 @@ import requests
 
 class IPSwitchMiddleware():
     """ Middleware to change IP when requests start failing. """
-
-    # Default values for settings
-    PORT     = 9051
-    PASSWORD = 'miltos'
-    PROXY    = 'http://127.0.0.1:8118'
-
 
     def __init__(self, 
         port: str, password: str, IPSwitchCodes: list[int], proxyAddress: str, IPsettleTime: int):
@@ -58,9 +53,9 @@ class IPSwitchMiddleware():
             raise NotConfigured
         
         return cls(
-            port          = crawler.settings.get("TOR_CONTROL_PORT",  default = IPSwitchMiddleware.PORT),
-            password      = crawler.settings.get("TOR_PASSWORD",      default = IPSwitchMiddleware.PASSWORD),
-            proxyAddress  = crawler.settings.get("TOR_PROXY_ADDRESS", default = IPSwitchMiddleware.PROXY),
+            port          = crawler.settings.get("TOR_CONTROL_PORT",  default = constants.PORT),
+            password      = crawler.settings.get("TOR_PASSWORD",      default = constants.PASSWORD),
+            proxyAddress  = crawler.settings.get("TOR_PROXY_ADDRESS", default = constants.PROXY),
             IPSwitchCodes = crawler.settings.get("IP_CHANGE_CODES"),
             IPsettleTime  = crawler.settings.get("IP_SETTLE_TIME"),
         )

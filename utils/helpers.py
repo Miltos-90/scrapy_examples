@@ -1,7 +1,9 @@
-from scrapy import Spider
-from logging import Filter
+from abc import ABC, ABCMeta, abstractmethod
+from scrapy import Spider, signals, Item
+from .constants import DB_PRAGMA_DEFAULT
+from scrapy.crawler import Crawler
 from sqlite3 import connect
-from abc import ABCMeta
+from logging import Filter
 import os
 
 
@@ -28,9 +30,10 @@ class Database():
     """ Generic database class """
 
     def __init__(self, 
-        pathToFile  : str,  # path to .db file
-        schemaScript: str,  # sqlite script that defines the schema
-        pragmaScript: str): # sqlite script that defines the pragmas):
+        pathToFile  : str,                      # path to .db file
+        schemaScript: str,                      # sqlite script that defines the schema
+        pragmaScript: str = DB_PRAGMA_DEFAULT   # sqlite script that defines the pragmas
+        ):  
 
         self.file       = pathToFile
         self.cursor     = None
@@ -88,3 +91,37 @@ class Database():
     """ Signals """
     def spiderOpened(self, spider: Spider): self._connect()
     def spiderClosed(self, spider: Spider): self._close()
+
+
+class AbstractDBSavePipeline(ABC):
+    """ Abstract pipeline to save items in the database defined in the class above. """
+
+    def __init__(self, filePath: str, pragma: str, schema: str):
+        """ Initialisation method. Instantiates database if it does not exist. """
+
+        self.db = Database(filePath, schema, pragma)
+
+        return
+    
+
+    @classmethod
+    def from_crawler(cls, crawler: Crawler):
+        """ Instantiates class """
+        
+        c = cls(
+            filePath = crawler.settings.get("DB"), 
+            pragma   = crawler.settings.get("DB_PRAGMA"),
+            schema   = crawler.settings.get("DB_SCHEMA")
+        )
+
+        # Connect signals
+        crawler.signals.connect(c.db.spiderOpened, signal = signals.spider_opened)
+        crawler.signals.connect(c.db.spiderClosed, signal = signals.spider_closed)
+
+        return c
+    
+
+    @abstractmethod
+    def process_item(self, item: Item, spider: Spider) -> Item:
+        """ Saves item in the database. To be implemented by the concrete classes """
+        pass

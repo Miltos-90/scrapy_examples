@@ -39,8 +39,7 @@ class QuoteItem(Item):
 
 
 class QuoteLoader(ItemLoader):
-    """ Declares the processors used in the loader 
-        for each field of the items.
+    """ Declares the processors used in the loader for each field of the items.
     """
 
     default_item_class       = QuoteItem

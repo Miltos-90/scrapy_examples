@@ -1,11 +1,9 @@
-from scrapy import Spider, Item, signals
+from scrapy import Spider, Item 
 from scrapy.exceptions import DropItem
-from scrapy.crawler import Crawler
-from typing import Tuple
 
 import sys
 sys.path.append('../utils')
-from utils.helpers import Database
+from utils.helpers import AbstractDBSavePipeline
 
 
 def isAuthor(item) -> bool: return "name" in item.keys()
@@ -46,63 +44,11 @@ class DefaultValuesPipeline():
         return item
     
 
-class SavePipeline():
+class SavePipeline(AbstractDBSavePipeline):
     """ Saves item to the database """
-
-
-    def __init__(self, filePath: str, pragma: str, schema: str):
-        """ Initialisation method """
-
-        self.db = Database(filePath, schema, pragma)
-
-        return
-    
-
-    @classmethod
-    def from_crawler(cls, crawler: Crawler):
-        """ Instantiates class """
-        
-        c = cls(
-            filePath = crawler.settings.get("DB"), 
-            pragma   = crawler.settings.get("DB_PRAGMA"),
-            schema   = crawler.settings.get("DB_SCHEMA")
-        )
-
-        # Connect signals
-        crawler.signals.connect(c.db.spiderOpened, signal = signals.spider_opened)
-        crawler.signals.connect(c.db.spiderClosed, signal = signals.spider_closed)
-
-        return c
-
 
     def process_item(self, item: Item, spider: Spider) -> Item:
         """ Save items in the database.
             This method is called for every item pipeline component
         """
-
-        if not bool(item)  : raise DropItem()
-        elif isAuthor(item): query, task = self.saveAuthorTask(item)
-        elif isQuote(item) : query, task = self.saveQuoteTask(item)
-        self.db.execute(query, task)
-
-        return item
     
-
-    @staticmethod
-    def saveQuoteTask(item: Item) -> Tuple[str, tuple]:
-        """ Returns the task of saving a quote to the database """
-        
-        query = "INSERT OR IGNORE INTO quotes (quote, keywords, author) VALUES (?, ?, ?);"
-        task  = (item['quote'], item['keywords'], item['author'])
-
-        return query, task
-    
-
-    @staticmethod
-    def saveAuthorTask(item: Item) -> Tuple[str, tuple]:
-        """ Returns the task of saving an author to the database """
-
-        query = "INSERT OR IGNORE INTO authors (name, birthdate, birthplace, bio) VALUES (?, ?, ?, ?);"
-        task  = (item['name'], item['birthdate'], item['birthplace'], item['bio'])
-
-        return query, task

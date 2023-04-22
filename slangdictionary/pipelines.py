@@ -1,13 +1,40 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+from scrapy import Spider, Item
+from scrapy.exceptions import DropItem
+
+import sys
+sys.path.append('../utils')
+from utils.helpers import AbstractDBSavePipeline
 
 
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
+class DefaultValuesPipeline():
+    """ Sets default values to all fields of an item """
 
+    def process_item(self, item: Item, spider: Spider) -> Item:
+        """ Item processor """
 
-class SlangdictionaryPipeline:
-    def process_item(self, item, spider):
+        if not bool(item): raise DropItem()
+        
+        item.setdefault('word', '')
+        item.setdefault('usage', {'hear': 0, 'no-hear': 0, 'no-use': 0, 'use': 0})
+        item.setdefault('definitions', [''])
+        item.setdefault('vulgarity', None)
+        
         return item
+
+
+class SavePipeline(AbstractDBSavePipeline):
+    """ Saves item to the database """
+
+
+    def process_item(self, item: Item, spider: Spider) -> Item:
+        """ Save items in the database.
+            This method is called for every item pipeline component
+        """
+
+        if not bool(item)  : raise DropItem()
+        
+        self.db.execute(query, task)
+
+        return item
+    
+

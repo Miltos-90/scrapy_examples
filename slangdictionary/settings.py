@@ -9,20 +9,12 @@
 
 CLOSESPIDER_ITEMCOUNT   = 0 # Default: 0
 CLOSESPIDER_TIMEOUT     = 0 # Default: 0 [sec]
-CLOSESPIDER_PAGECOUNT   = 150 # Default: 0
+CLOSESPIDER_PAGECOUNT   = 100 # Default: 0
 BOT_NAME                = "slangdictionary"
 SPIDER_MODULES          = ["slangdictionary.spiders"]
 NEWSPIDER_MODULE        = "slangdictionary.spiders"
 ALLOWED_DOMAINS         = ['onlineslangdictionary.com']                
-START_URLS              = ['http://onlineslangdictionary.com/meaning-definition-of/5-by-5']
-
-# ['http://onlineslangdictionary.com/meaning-definition-of/3rd-base']
-# ['http://onlineslangdictionary.com/word-list/0-a/']
-# ['http://onlineslangdictionary.com/meaning-definition-of/1432']
-# ['http://onlineslangdictionary.com/meaning-definition-of/as-useless-as-tits-on-a-boar-hog']
-# ['http://onlineslangdictionary.com/meaning-definition-of/10%253a30'] 
-# [http://onlineslangdictionary.com/meaning-definition-of/asshole]
-# ['http://onlineslangdictionary.com/meaning-definition-of/1080']
+START_URLS              = ['http://onlineslangdictionary.com/word-list/0-a/']
 CUSTOM_SPIDER_SETTINGS  = {'JOBDIR': './crawls'}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -97,6 +89,29 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #HTTPCACHE_DIR = "httpcache"
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
+
+
+""" Database-related settings """
+DB   = "./slang_dict.db"
+
+DB_PRAGMA = """
+    PRAGMA foreign_keys=OFF;
+    PRAGMA journal_mode=WAL;
+    PRAGMA synchronous=FULL;
+    """
+
+DB_SCHEMA = """
+    CREATE TABLE IF NOT EXISTS items (
+        id              INTEGER PRIMARY KEY,
+        word            TEXT NOT NULL,
+        definition      TEXT NOT NULL,
+        users_used      INTEGER,
+        users_not_used  INTEGER,
+        users_heard     INTEGER,
+        users_not_heard INTEGER,
+        vulgarity       INTEGER
+    ) STRICT; 
+"""
 
 # Set settings whose default value is deprecated to a future-proof value
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
