@@ -32,6 +32,10 @@ class SavePipeline(AbstractDBSavePipeline):
         """
 
         if not bool(item)  : raise DropItem()
+
+        for d in item
+        query = "INSERT OR IGNORE INTO authors (name, birthdate, birthplace, bio) VALUES (?, ?, ?, ?);"
+        task  = (item['name'], item['birthdate'], item['birthplace'], item['bio'])
         
         self.db.execute(query, task)
 
