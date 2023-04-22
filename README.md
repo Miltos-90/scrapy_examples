@@ -2,7 +2,7 @@
 
 A collection of scrapy examples in TOR with header and IP rotation.
 
-To use, follow the instruction to setup tor and privoxy. These instructions are (for the most part) provided [here](https://www.khalidalnajjar.com/stealthy-crawling-using-scrapy-tor-and-privoxy/), nevertheless additional/different steps are needed to get a working installation:
+To use, follow the instructions to setup tor and privoxy. These instructions are (for the most part) provided [here](https://www.khalidalnajjar.com/stealthy-crawling-using-scrapy-tor-and-privoxy/), nevertheless additional/different steps are needed to get a working installation:
 
 ## Installing and configuring Tor and Privoxy
 
