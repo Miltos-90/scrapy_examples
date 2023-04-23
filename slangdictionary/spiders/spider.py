@@ -109,6 +109,8 @@ class SlangSpider(Spider):
             elif hasBlockquote: d = selector.xpath(xpathA('blockquote'))
             else              : d = selector.xpath(xpathB())
 
-            defs.append(d.extract())
+            d = ''.join(d.extract())
+            
+            defs.append(d)
 
         return defs

@@ -9,7 +9,7 @@ def clean(paths: list):
     return
 # ===============================================================
 
-clean(paths = ['./logger.log', './crawls'])
+#clean(paths = ['./logger.log', './crawls', './slang_dict.db'])
 
 from slangdictionary.spiders.spider import SlangSpider
 from scrapy.utils.project import get_project_settings

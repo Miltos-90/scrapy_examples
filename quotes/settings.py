@@ -16,12 +16,6 @@ DOWNLOAD_DELAY                  = 0.1  # Time [sec] to wait before downloading c
 DOWNLOAD_TIMEOUT                = 30   # Time [sec] that the downloader will wait before timing out.
 CONCURRENT_REQUESTS_PER_DOMAIN  = 16   # maximum number of concurrent requests performed to a single domain.
 
-""" Logger configuration """
-LOG_FILE        = './logger.log'
-LOG_FORMAT      = '%(levelname)s: %(message)s'
-LOG_LEVEL       = logging.DEBUG
-COOKIES_ENABLED = True # Disable cookies (enabled by default
-
 """ Item pipeline configuration"""
 ITEM_PIPELINES = {
     'quotes.pipelines.DefaultValuesPipeline': 1,
@@ -63,6 +57,7 @@ USER_AGENTS              = 'program'
 URL_LOG_ENABLED = True
 URL_LOG_DB      = "./url_logger.db"
 
+
 """ Extensions configuration """
 EXTENSIONS  = {'utils.extensions.ProgressMonitor': 0}
 PROGRESS_MONITOR_ENABLED = True
@@ -96,7 +91,10 @@ DB_SCHEMA = """
     ) STRICT; 
 """
 
-""" Apply logger configuration """
+""" Logger configuration """
+LOG_FILE        = './logger.log'
+LOG_FORMAT      = '%(levelname)s: %(message)s'
+LOG_LEVEL       = logging.ERROR
 configure_logging(settings = {"LOG_FILE": LOG_FILE, "LOG_FORMAT": LOG_FORMAT, "LOG_LEVEL": LOG_LEVEL})
 logging.getLogger('scrapy.core.scraper').addFilter(LoggerFilter())
 

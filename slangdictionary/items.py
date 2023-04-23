@@ -1,52 +1,33 @@
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
-
-from itemloaders.processors import MapCompose, TakeFirst
+from itemloaders.processors import MapCompose, TakeFirst, Identity
 from scrapy.loader import ItemLoader
 from scrapy import Item, Field
-from datetime import datetime
 
 
 """ Definition of functions used in the Itemloader """
 
-def usageProcessor(d: list) -> list:
+def usageProcessor(d: dict) -> list:
     """ Processor for the usage field. It converts the dict's values from lists, to scalars. """
-
-    d = d[0] # unpack
 
     # Convert values from list[str] to integers
     return [{k: int(v[0]) for k, v in d.items()}]
 
 
-def vulgarityProcessor(s: list) -> list:
+def vulgarityProcessor(s: str) -> list:
     """ Processor for the vulgarity field. It strips the '%' cahracter """
 
-    out = []
-    for e in s:
-        if e == 'None': 
-            out.append(None)
-        else: 
-            out.append( int(e.strip('%')) )
+    if s == 'None': s = None
+    else: s = int(s.strip('%'))
     
-    return out
+    return s
 
 
-def definitionProcessor(defs: list) -> list:
+def definitionProcessor(d: str) -> list:
     """ Processor for the defintion field """
 
     # Merge fields and implicitly convert multiple whitespace characters 
     # to single whitespace, and sanitize
 
-    newDefs = []
-    for d in defs:
-        d = ''.join(d)
-        d = ' '.join(d.split()).strip('\r').strip('\n').strip()
-
-        newDefs.append(d)
-    
-    return newDefs
+    return d.strip('\r').strip('\n').strip()
 
 
 class WordItem(Item):
@@ -62,11 +43,11 @@ class WordLoader(ItemLoader):
     """ Declares the processors used in the loader for each field of the items.
     """
 
-    definitions_in     = definitionProcessor
-    vulgarity_in       = vulgarityProcessor
-    usage_in           = usageProcessor
     default_item_class = WordItem
+    definitions_in     = MapCompose(definitionProcessor)
+    vulgarity_in       = MapCompose(vulgarityProcessor)
+    usage_in           = MapCompose(usageProcessor)
+    definitions_out    = Identity()
     default_output_processor = TakeFirst()
-    
 
 

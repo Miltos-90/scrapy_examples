@@ -16,14 +16,14 @@ class DefaultValuesPipeline():
         
         item.setdefault('word', '')
         item.setdefault('usage', {'hear': 0, 'no-hear': 0, 'no-use': 0, 'use': 0})
-        item.setdefault('definitions', [''])
+        item.setdefault('definitions', '')
         item.setdefault('vulgarity', None)
         
         return item
 
 
 class SavePipeline(AbstractDBSavePipeline):
-    """ Saves item to the database """
+    """ Saves an item to the database """
 
 
     def process_item(self, item: Item, spider: Spider) -> Item:
@@ -33,12 +33,16 @@ class SavePipeline(AbstractDBSavePipeline):
 
         if not bool(item)  : raise DropItem()
 
-        for d in item
-        query = "INSERT OR IGNORE INTO authors (name, birthdate, birthplace, bio) VALUES (?, ?, ?, ?);"
-        task  = (item['name'], item['birthdate'], item['birthplace'], item['bio'])
-        
-        self.db.execute(query, task)
+        u, v, w = item['usage'], item['vulgarity'], item['word']
+        query   = """
+            INSERT OR IGNORE INTO items 
+            (word, definition, users_used, users_not_used, users_heard, users_not_heard, vulgarity) 
+            VALUES (?, ?, ?, ?, ?, ?, ?); 
+        """
+
+        for d in item['definitions']:
+            task  = (w, d, u['use'], u['no-use'], u['hear'], u['no-hear'], v)
+            self.db.execute(query, task)
 
         return item
     
-
