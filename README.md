@@ -75,4 +75,5 @@ torify scrapy crawl <projectName>
 
 So far (this is always a work in progress) the following scrapers are fully functional:
 
-* quotes: https://quotes.toscrape.com/
+* [quotes](https://quotes.toscrape.com/)
+* [slangdictionary](http://onlineslangdictionary.com/)
